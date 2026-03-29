@@ -10,6 +10,8 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- HTML2PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Socket.IO -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; overflow-x: hidden; }
@@ -79,19 +81,21 @@
                         </div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><i data-lucide="target" class="text-blue-500"></i></div>
                     </div>
-                    <div class="glass-card p-6 rounded-2xl flex items-start justify-between">
-                        <div>
-                            <p class="text-slate-500 font-medium mb-1">Target Role</p>
-                            <h4 class="text-xl font-bold text-slate-800 mt-2 truncate w-32" id="dash-role">None</h4>
+                    
+                    <!-- God-Level Pro Ad / Interview Trigger -->
+                    <div class="glass-card p-6 rounded-2xl flex flex-col justify-between col-span-2 bg-gradient-to-r from-slate-900 to-indigo-900 border-none relative overflow-hidden group cursor-pointer" onclick="openInterviewModal()">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
+                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full filter blur-3xl opacity-30 group-hover:opacity-50 transition duration-500"></div>
+                        <div class="relative z-10 flex justify-between items-center h-full">
+                            <div>
+                                <p class="text-indigo-200 font-bold mb-1 uppercase tracking-wider text-xs"><i data-lucide="zap" class="w-3 h-3 inline pb-0.5"></i> Premium Feature</p>
+                                <h4 class="text-2xl font-bold text-white mb-2">Live AI Mock Interview</h4>
+                                <p class="text-slate-300 text-sm max-w-sm">Face a brutal Google Recruiter AI via real-time WebSockets to test your technical skills under pressure.</p>
+                            </div>
+                            <button class="px-6 py-3 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:scale-105 transition transform flex items-center gap-2">
+                                Start Simulator <i data-lucide="play" class="w-4 h-4"></i>
+                            </button>
                         </div>
-                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><i data-lucide="zap" class="text-emerald-500"></i></div>
-                    </div>
-                    <div class="glass-card p-6 rounded-2xl flex items-start justify-between">
-                        <div>
-                            <p class="text-slate-500 font-medium mb-1">Skill Matches</p>
-                            <h4 class="text-3xl font-bold text-slate-800" id="dash-skills-count">0</h4>
-                        </div>
-                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><i data-lucide="lightbulb" class="text-amber-500"></i></div>
                     </div>
                 </div>
 
@@ -189,11 +193,27 @@
                 <header class="mb-4 flex justify-between items-start">
                     <div>
                         <h2 class="text-3xl font-bold text-slate-800 mb-2">Profile Assistant</h2>
-                        <p class="text-slate-600 text-lg">Chat or upload your resume (PDF/Photo) to build your profile.</p>
+                        <p class="text-slate-600 text-lg">Chat, upload an old resume, or Sync with GitHub to build your profile.</p>
                     </div>
-                    <button onclick="downloadResume()" id="btn-resume-pdf" class="flex flex-col items-center justify-center gap-1 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm font-medium">
-                        <div class="flex items-center gap-2"><i data-lucide="file-down" class="w-5 h-5"></i><span>Get Resume (PDF)</span></div>
-                    </button>
+                    <div class="flex flex-col gap-2 items-end">
+                        <button onclick="downloadResume()" id="btn-resume-pdf" class="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm font-medium w-48">
+                            <i data-lucide="file-down" class="w-5 h-5"></i><span>Get Resume (PDF)</span>
+                        </button>
+                        <div class="flex flex-col gap-2 w-48">
+                            <div class="flex items-center gap-1 w-full">
+                                <input type="text" id="github-username" placeholder="GitHub Username" class="flex-1 w-full px-3 py-2 rounded-l-xl input-modern text-sm border-r-0 h-[40px]" onkeypress="if(event.key === 'Enter') syncGithub()">
+                                <button onclick="syncGithub()" id="btn-github-sync" class="h-[40px] px-3 bg-slate-800 text-white rounded-r-xl hover:bg-slate-900 transition flex items-center justify-center shrink-0" title="Sync GitHub">
+                                    <i data-lucide="github" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                            <div class="flex items-center gap-1 w-full">
+                                <input type="text" id="linkedin-url" placeholder="LinkedIn Name/URL" class="flex-1 w-full px-3 py-2 rounded-l-xl input-modern text-sm border-r-0 h-[40px]" onkeypress="if(event.key === 'Enter') syncLinkedin()">
+                                <button onclick="syncLinkedin()" id="btn-linkedin-sync" class="h-[40px] px-3 bg-[#0a66c2] text-white rounded-r-xl hover:bg-blue-800 transition flex items-center justify-center shrink-0" title="Sync LinkedIn">
+                                    <i data-lucide="linkedin" class="w-4 h-4"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </header>
                 
                 <div class="glass-card flex-1 flex flex-col overflow-hidden rounded-2xl relative max-w-3xl border border-slate-200 shadow-sm max-h-[600px] bg-white">
@@ -235,8 +255,95 @@
         </div>
     </div>
 
+    </div>
+
     <!-- Hidden Resume Render Container -->
     <div id="resume-container" style="display: none; width: 800px; padding: 40px; background: white; color: black; font-family: 'Inter', sans-serif;"></div>
+
+    <!-- God-Level Interview Modal -->
+    <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-slate-900 border border-slate-700 w-full max-w-4xl h-[80vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300" id="interview-card">
+            
+            <!-- Header -->
+            <div class="px-6 py-4 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center backdrop-blur-md">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
+                    <h3 class="text-white font-bold text-lg">WebSocket Live Video Analysis <span class="text-xs ml-2 bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-md">Navora Premium</span></h3>
+                </div>
+                <button onclick="closeInterviewModal()" class="text-slate-400 hover:text-white transition bg-slate-800 p-2 rounded-full hover:bg-slate-700">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <!-- Video Feeds & Chat Area -->
+            <div class="flex-1 p-6 flex gap-6 overflow-hidden">
+                <!-- Interviewer Video Box -->
+                <div class="w-1/3 flex flex-col gap-4">
+                    <div class="relative w-full aspect-[4/5] bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-inner flex flex-col items-center justify-center">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent z-10"></div>
+                        <div class="w-32 h-32 rounded-full bg-indigo-900 border-4 border-indigo-500/30 flex items-center justify-center z-20 mb-4 overflow-hidden relative shadow-[0_0_30px_rgba(99,102,241,0.3)]">
+                            <i data-lucide="bot" class="w-16 h-16 text-indigo-300"></i>
+                        </div>
+                        <h4 class="text-indigo-100 font-bold z-20 text-lg">Senior AI Recruiter</h4>
+                        <p class="text-slate-400 text-sm z-20">Google Cloud Platform</p>
+                        
+                        <!-- Real-time Voice Visualizer Simulation -->
+                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-end gap-1 z-20 h-6">
+                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_1s_infinite] h-2"></div>
+                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_0.8s_infinite] h-4"></div>
+                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_1.2s_infinite] h-6" id="audio-bar"></div>
+                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_0.9s_infinite] h-3"></div>
+                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_1.1s_infinite] h-5"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex-1 flex flex-col gap-2">
+                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">Candidate Feed</p>
+                        <div class="w-full bg-slate-900 rounded-lg overflow-hidden border border-slate-700 relative h-28">
+                            <video id="webcam-feed" autoplay muted playsinline class="w-full h-full object-cover opacity-80 transform -scale-x-100"></video>
+                            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent p-2 text-[10px] text-slate-300 flex justify-between">
+                                <span class="tracking-widest font-mono">REC</span>
+                                <span class="text-red-400 animate-pulse">●</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mt-2">Live Metrics</p>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">Eye Contact</span><span class="text-emerald-400" id="metric-eye">92%</span></div>
+                                <div class="w-full bg-slate-900 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" id="metric-eye-bar" style="width: 92%"></div></div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">Confidence Tone</span><span class="text-amber-400" id="metric-conf">85%</span></div>
+                                <div class="w-full bg-slate-900 rounded-full h-1.5"><div class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" id="metric-conf-bar" style="width: 85%"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Transcript Area -->
+                <div class="flex-1 bg-slate-800 rounded-2xl border border-slate-700 flex flex-col relative overflow-hidden">
+                    <div id="interview-transcript" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
+                        <div class="text-center text-slate-500 text-sm py-4 border-b border-slate-700/50">End-to-end WebSocket connection established. Commencing technical screening.</div>
+                    </div>
+                    
+                    <!-- Input Area -->
+                    <div class="p-4 bg-slate-850 border-t border-slate-700 pt-0">
+                        <div class="text-slate-400 text-xs mb-2 ml-2 italic" id="interview-status">Connecting to Recruiter AI... slowly booting...</div>
+                        <div class="relative">
+                            <input type="text" id="interview-input" disabled class="w-full bg-slate-900 border border-slate-600 rounded-xl py-4 pl-4 pr-24 text-slate-200 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Awaiting recruiter opening statement..." onkeypress="if(event.key === 'Enter') sendInterviewMessage()">
+                            <button onclick="toggleVoiceInput()" id="btn-interview-mic" disabled class="absolute right-14 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-inner z-10 group">
+                                <span class="absolute -top-8 bg-slate-800 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">Voice</span>
+                                <i data-lucide="mic" class="w-4 h-4" id="mic-icon"></i>
+                            </button>
+                            <button onclick="sendInterviewMessage()" id="btn-interview-send" disabled class="absolute right-2 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(79,70,229,0.5)] z-10">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         lucide.createIcons();
@@ -487,6 +594,117 @@
             }
         }
 
+        async function syncGithub() {
+            const username = document.getElementById('github-username').value.trim();
+            if (!username) return alert("Please enter a GitHub username");
+            
+            const btn = document.getElementById('btn-github-sync');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.disabled = true;
+            lucide.createIcons();
+            
+            appendMessage('user', `Please scan my GitHub profile: ${username}`);
+            
+            try {
+                const res = await fetch('/api/profile/github', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username})
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    appendMessage('assistant', `I've successfully scanned your GitHub! Based on your public repositories, I've added several verified skills to your profile.\n\nSummary: ${data.summary}`);
+                    chatHistory.push({role: 'model', text: `GitHub Sync Success: ${data.summary}`});
+                    loadProfile();
+                } else {
+                    appendMessage('assistant', `Error syncing GitHub: ${data.error}`);
+                }
+            } catch (e) {
+                appendMessage('assistant', 'Network error during GitHub sync.');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                document.getElementById('github-username').value = '';
+                lucide.createIcons();
+            }
+        }
+
+        async function syncLinkedin() {
+            const urlRaw = document.getElementById('linkedin-url').value.trim();
+            if (!urlRaw) return alert("Please enter a LinkedIn URL or Username");
+            
+            const btn = document.getElementById('btn-linkedin-sync');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
+            btn.disabled = true;
+            lucide.createIcons();
+            
+            appendMessage('user', `Please scan my LinkedIn profile: ${urlRaw}`);
+            
+            try {
+                const res = await fetch('/api/profile/linkedin', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({linkedin_url: urlRaw})
+                });
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    appendMessage('assistant', `I've successfully scanned your LinkedIn! I used our God-Level Tavily Scraper to parse your professional background.\n\nSummary: ${data.summary}`);
+                    chatHistory.push({role: 'model', text: `LinkedIn Sync Success: ${data.summary}`});
+                    loadProfile();
+                } else {
+                    appendMessage('assistant', `Error syncing LinkedIn: ${data.error}`);
+                }
+            } catch (e) {
+                appendMessage('assistant', 'Network error during LinkedIn sync.');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                document.getElementById('linkedin-url').value = '';
+                lucide.createIcons();
+            }
+        }
+
+        async function startAutoBot() {
+            const role = document.getElementById('bot-target-role').value.trim();
+            if(!role) return alert("Please specify the exact role you want the bot to mass-apply for.");
+            
+            const btn = document.getElementById('btn-start-bot');
+            btn.innerHTML = 'Connecting to Cloud...';
+            btn.disabled = true;
+            
+            document.getElementById('bot-terminal').innerHTML = '<div class="text-slate-600">Booting Navora Autopilot script...</div>';
+            document.getElementById('bot-status').innerText = 'STARTING';
+            document.getElementById('bot-pulse').classList.remove('hidden');
+            
+            // Connect socket if not already connected
+            if (!socket) socket = io();
+            
+            try {
+                const res = await fetch('/api/bot/auto-apply', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({target_role: role})
+                });
+                const data = await res.json();
+                if(data.error) throw new Error(data.error);
+                
+                btn.innerHTML = 'Bot Running in Background <i data-lucide="cog" class="w-5 h-5 animate-spin"></i>';
+                lucide.createIcons();
+            } catch (e) {
+                alert(e.message);
+                btn.disabled = false;
+                btn.innerHTML = 'Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>';
+                lucide.createIcons();
+            }
+        }
+        
+        // Setup Bot Event Listeners globally so they catch even if user navigates tabs.
+        // Needs to run on boot! We can just do it lazily inside startAutoBot or loadProfile.
+
         async function loadTrends() {
             const container = document.getElementById('trends-container');
             container.innerHTML = '<div class="text-slate-500 col-span-2 text-center py-8">Analyzing live trends...</div>';
@@ -597,6 +815,270 @@
                 btn.disabled = false;
                 lucide.createIcons();
             }
+        }
+
+        // --- WEB SOCKET, VOICE API, & INTERVIEW ARCHITECTURE ---
+        let socket = io(); // Global Persistent Socket
+        let recognition = null;
+        let isRecording = false;
+        let stream = null;
+        let metricInterval = null;
+        
+        // Auto-Applier Bot Logs Handlers
+        socket.on('bot_log', (data) => {
+            const terminal = document.getElementById('bot-terminal');
+            if(terminal) {
+                const time = new Date().toLocaleTimeString();
+                terminal.insertAdjacentHTML('beforeend', `<div class="mb-2 leading-relaxed"><span class="text-slate-500 mr-2">[${time}]</span> <span class="text-slate-300">${data.message}</span></div>`);
+                terminal.scrollTop = terminal.scrollHeight;
+            }
+        });
+        
+        socket.on('bot_status', (data) => {
+            const statusEl = document.getElementById('bot-status');
+            const pulseEl = document.getElementById('bot-pulse');
+            const btn = document.getElementById('btn-start-bot');
+            
+            if(statusEl) statusEl.innerText = data.status;
+            if (data.status === 'RUNNING') {
+                if(pulseEl) pulseEl.classList.remove('hidden');
+            } else {
+                if(pulseEl) pulseEl.classList.add('hidden');
+                if(btn) {
+                    btn.innerHTML = 'Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>';
+                    btn.disabled = false;
+                }
+            }
+            lucide.createIcons();
+        });
+        
+        // Initialize Speech API
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = true;
+            
+            recognition.lang = 'en-US';
+            
+            recognition.onstart = function() {
+                isRecording = true;
+                document.getElementById('mic-icon').classList.add('text-red-500', 'animate-pulse');
+                document.getElementById('interview-input').placeholder = "Listening directly to your microphone...";
+            };
+            
+            recognition.onresult = function(event) {
+                let interimTranscript = '';
+                let finalTranscript = '';
+                for (let i = event.resultIndex; i < event.results.length; ++i) {
+                    if (event.results[i].isFinal) {
+                        finalTranscript += event.results[i][0].transcript;
+                    } else {
+                        interimTranscript += event.results[i][0].transcript;
+                    }
+                }
+                const inputField = document.getElementById('interview-input');
+                if (finalTranscript) {
+                    inputField.value = finalTranscript;
+                    toggleVoiceInput(); // Auto stop listening when done speaking
+                    setTimeout(() => sendInterviewMessage(), 500); // Auto send!
+                } else {
+                    inputField.value = interimTranscript;
+                }
+            };
+            
+            recognition.onerror = function(event) {
+                isRecording = false;
+                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse');
+                document.getElementById('interview-input').placeholder = "Type your response to the recruiter...";
+                
+                // Extremely Explicit Voice Error Handling to debug why it crashed on their PC
+                console.error("Voice Recognition Error:", event.error);
+                if (event.error === 'not-allowed') {
+                    alert("VOICE ERROR: Microphone access was denied! Wait, if you are running this app on 'http://127.0.0.1:5001', the browser will BLOCK microphone access due to security policies! You MUST access the app locally via 'http://localhost:5001' to enable microphone permissions on Windows.");
+                } else {
+                    alert("VOICE ERROR: " + event.error);
+                }
+            };
+            recognition.onend = function() {
+                if(isRecording) recognition.start(); // Keep alive if still supposed to listen
+            };
+        }
+        
+        function toggleVoiceInput() {
+            if (!recognition) return alert("Your browser doesn't support the raw Speech API.");
+            if (isRecording) {
+                isRecording = false;
+                recognition.stop();
+                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse');
+                document.getElementById('interview-input').placeholder = "Type your response to the recruiter...";
+            } else {
+                document.getElementById('interview-input').value = '';
+                recognition.start();
+            }
+        }
+        
+        async function startWebcam() {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('webcam-feed').srcObject = stream;
+            } catch (err) {
+                console.log("Webcam denied or unavailable.");
+            }
+        }
+        
+        function updateFakeMetrics() {
+            // Give them a simulated God-Level analysis experience
+            const newEye = Math.floor(Math.random() * (99 - 85 + 1) + 85);
+            const newConf = Math.floor(Math.random() * (98 - 75 + 1) + 75);
+            
+            document.getElementById('metric-eye').innerText = newEye + "%";
+            document.getElementById('metric-eye-bar').style.width = newEye + "%";
+            
+            document.getElementById('metric-conf').innerText = newConf + "%";
+            document.getElementById('metric-conf-bar').style.width = newConf + "%";
+        }
+
+        // Interview Stream Global Handler
+        socket.on('interview_stream', (data) => {
+            const statusText = document.getElementById('interview-status');
+            const inputField = document.getElementById('interview-input');
+            const sendBtn = document.getElementById('btn-interview-send');
+            const micBtn = document.getElementById('btn-interview-mic');
+            const transcript = document.getElementById('interview-transcript');
+            const audioBar = document.getElementById('audio-bar');
+            
+            if (!statusText) return; // Ensures safe UI bounds
+            
+            if (data.status) {
+                statusText.innerText = data.status;
+                statusText.classList.add('animate-pulse', 'text-amber-400');
+            }
+            
+            if (data.bot_talking) {
+                inputField.disabled = true;
+                sendBtn.disabled = true;
+                if(micBtn) micBtn.disabled = true;
+                inputField.placeholder = "Recruiter is analyzing...";
+                audioBar.classList.remove('h-6');
+                audioBar.classList.add('h-10');
+            } else if (data.text) {
+                // The bot has spoken!
+                statusText.innerText = "Your turn to speak or type.";
+                statusText.classList.remove('animate-pulse', 'text-amber-400');
+                statusText.classList.add('text-emerald-400');
+                inputField.disabled = false;
+                sendBtn.disabled = false;
+                if(micBtn) micBtn.disabled = false;
+                inputField.placeholder = "Type your response to the recruiter...";
+                // if(!isRecording) inputField.focus(); 
+                audioBar.classList.remove('h-10');
+                audioBar.classList.add('h-6');
+                // Extract [TIP] ... [/TIP]
+                let rawText = data.text;
+                let tipsHtml = '';
+                const tipMatch = rawText.match(/\[TIP\]([\s\S]*?)\[\/TIP\]/i);
+                if (tipMatch) {
+                    tipsHtml = `<div class="mt-4 p-4 bg-emerald-900/40 border-l-4 border-emerald-500 rounded-r-xl shadow-inner mb-3">
+                        <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Notable Improvement Tips</p>
+                        <p class="text-emerald-100 text-sm leading-relaxed italic">${tipMatch[1].trim().replace(/\n/g, '<br>')}</p>
+                    </div>`;
+                    rawText = rawText.replace(tipMatch[0], '');
+                }
+                
+                // Parse Markdown logic: **Text** -> Highly styled blocks
+                let formattedText = rawText.replace(/\*\*(.*?)\*\*/g, '<br><span class="font-bold text-indigo-300 bg-indigo-900/60 shadow-inner px-4 py-3 rounded-xl block border-l-4 border-indigo-500 mb-2 mt-2">$1</span>').replace(/\n/g, '<br>');
+                
+                // Append the tips block
+                formattedText = formattedText + tipsHtml;
+                
+                // Add message to transcript
+                const msgHTML = `
+                    <div class="flex gap-4">
+                        <div class="w-10 h-10 rounded-full bg-indigo-900 border-2 border-indigo-500/50 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(99,102,241,0.3)]">
+                            <i data-lucide="bot" class="w-6 h-6 text-indigo-300"></i>
+                        </div>
+                        <div class="bg-indigo-900/40 border border-indigo-500/20 p-4 rounded-2xl rounded-tl-sm shadow-sm flex-1">
+                            <p class="text-indigo-100 leading-relaxed font-medium text-sm">${formattedText}</p>
+                        </div>
+                    </div>
+                `;
+                transcript.insertAdjacentHTML('beforeend', msgHTML);
+                transcript.scrollTop = transcript.scrollHeight;
+                lucide.createIcons();
+            }
+        });
+
+        function openInterviewModal() {
+            const modal = document.getElementById('interview-modal');
+            const card = document.getElementById('interview-card');
+            modal.classList.remove('hidden');
+            
+            // Trigger animation
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+                startWebcam(); // Turn on their camera!
+                metricInterval = setInterval(updateFakeMetrics, 3000); // Fluctuate metrics
+            }, 10);
+            
+            document.getElementById('interview-status').innerText = "WebSocket Persistent Connection Alive: Initiating Interview sequence...";
+            socket.emit('start_interview', {});
+        }
+        
+        // Initialize Speech API
+        
+        function closeInterviewModal() {
+            const modal = document.getElementById('interview-modal');
+            const card = document.getElementById('interview-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            
+            // Turn off camera and mic
+            if (isRecording) toggleVoiceInput();
+            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            if (metricInterval) clearInterval(metricInterval);
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                // We DO NOT disconnect the global socket so background bots stay alive!
+                document.getElementById('interview-transcript').innerHTML = '<div class="text-center text-slate-500 text-sm py-4 border-b border-slate-700/50">End-to-end WebSocket connection established. Commencing technical screening.</div>';
+                document.getElementById('interview-input').disabled = true;
+                document.getElementById('btn-interview-send').disabled = true;
+                if(document.getElementById('btn-interview-mic')) document.getElementById('btn-interview-mic').disabled = true;
+            }, 300);
+        }
+        
+        function sendInterviewMessage() {
+            const input = document.getElementById('interview-input');
+            const text = input.value.trim();
+            if (!text || !socket) return;
+            
+            const transcript = document.getElementById('interview-transcript');
+            if (isRecording) toggleVoiceInput(); // Turn off mic when sending
+            
+            // Render user text immediately
+            const msgHTML = `
+                <div class="flex gap-4 ml-12 justify-end">
+                    <div class="bg-slate-700/50 border border-slate-600/50 p-4 rounded-2xl rounded-tr-sm shadow-sm">
+                        <p class="text-slate-200 leading-relaxed">${text}</p>
+                    </div>
+                    <div class="w-10 h-10 rounded-full bg-slate-700 border-2 border-slate-500 flex items-center justify-center shrink-0">
+                        <span class="text-sm font-bold text-slate-300">U</span>
+                    </div>
+                </div>
+            `;
+            transcript.insertAdjacentHTML('beforeend', msgHTML);
+            transcript.scrollTop = transcript.scrollHeight;
+            
+            input.value = '';
+            input.disabled = true;
+            document.getElementById('btn-interview-send').disabled = true;
+            if(document.getElementById('btn-interview-mic')) document.getElementById('btn-interview-mic').disabled = true;
+            document.getElementById('interview-status').innerText = "Processing streaming response...";
+            
+            // Emit to backend.
+            socket.emit('interview_message', {message: text});
         }
 
         loadProfile();
