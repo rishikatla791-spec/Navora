@@ -1,0 +1,6 @@
+flask
+google-genai
+requests
+beautifulsoup4
+tavily-python
+python-dotenv

@@ -1,0 +1,33 @@
+# Node.js
+node_modules/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+
+# Environment variables
+.env
+
+# Database
+database.db
+
+# UI / CSS
+output.css
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+.DS_Store
+.ipynb_checkpoints/

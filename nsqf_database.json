@@ -1,0 +1,17 @@
+{
+  "roles": [
+    {
+      "role": "Software Developer",
+      "nsqf_level": 5,
+      "core_skills": ["Programming", "Data Structures", "Algorithms", "Databases"],
+      "trending_skills": ["Cloud Deployment", "React.js", "AI/LLMs"],
+      "internship_titles": ["Software Engineering Intern", "Backend Developer Intern", "Frontend Intern"]
+    }
+  ],
+  "trending_skills": [
+    {"skill": "AI/LLMs", "growth": "+50%"},
+    {"skill": "Cloud Deployment", "growth": "+30%"},
+    {"skill": "React & Next.js", "growth": "+30%"},
+    {"skill": "Zero Trust Security", "growth": "+60%"}
+  ]
+}
