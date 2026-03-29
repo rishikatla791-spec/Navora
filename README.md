@@ -14,10 +14,10 @@ NAVORA is an intelligent career management and internship discovery platform des
 ## 🛠️ Tech Stack
 
 - **Backend:** Flask (Python), SQLite
-- **AI/LLM:** Google Gemini API (Flash Lite & 2.5 Flash)
+- **AI/LLM:** Google Gemini API (Gemini 3 Flash & Pro)
 - **Search & Data:** Tavily Search API, BeautifulSoup4 (Scraping)
-- **Frontend:** HTML5, Tailwind CSS
-- **Environment:** python-dotenv
+- **Real-time:** Flask-SocketIO (WebSockets)
+- **Frontend:** HTML5, Tailwind CSS v4, Lucide Icons
 
 ## 📋 Prerequisites
 

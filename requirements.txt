@@ -1,6 +1,13 @@
 flask
+Flask-SocketIO
 google-genai
 requests
 beautifulsoup4
 tavily-python
 python-dotenv
+stripe
+celery
+playwright
+sqlalchemy
+gunicorn
+eventlet

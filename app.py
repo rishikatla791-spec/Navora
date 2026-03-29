@@ -1,4 +1,4 @@
-import os, json, time, sqlite3, logging, requests, base64
+import os, json, time, sqlite3, logging, requests, base64, threading
 from flask import Flask, jsonify, request, send_from_directory
 from bs4 import BeautifulSoup
 from google import genai
@@ -7,10 +7,25 @@ from tavily import TavilyClient
 from dotenv import load_dotenv
 
 # Enterprise Architecture Dependencies
-import stripe
-from celery import Celery
+try:
+    import stripe
+except ImportError:
+    stripe = None
+    logging.warning("stripe not installed — payment features disabled")
+
+try:
+    from celery import Celery
+except ImportError:
+    Celery = None
+    logging.warning("celery not installed — background queue disabled")
+
+try:
+    from playwright.sync_api import sync_playwright
+except ImportError:
+    sync_playwright = None
+    logging.warning("playwright not installed — headless browser disabled")
+
 from flask_socketio import SocketIO, emit
-from playwright.sync_api import sync_playwright
 
 load_dotenv()
 
@@ -19,13 +34,24 @@ app = Flask(__name__, static_folder='.', template_folder='.')
 
 # --- ENTERPRISE CONFIGURATION ---
 # 1. Stripe Payment Setup
-stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_mock_stripe_key_only_for_dev")
+if stripe:
+    stripe.api_key = os.getenv("STRIPE_SECRET_KEY", "sk_test_mock_stripe_key_only_for_dev")
 
 # 2. Redis/Celery Background Worker Setup (Using SQLite as Broker to run on Windows easily!)
 app.config['CELERY_BROKER_URL'] = 'sqla+sqlite:///celery_broker.db'
 app.config['CELERY_RESULT_BACKEND'] = 'db+sqlite:///celery_results.db'
-celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['CELERY_RESULT_BACKEND'])
-celery.conf.update(app.config)
+
+if Celery:
+    celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'], backend=app.config['CELERY_RESULT_BACKEND'])
+    celery.conf.update(app.config)
+else:
+    class MockCelery:
+        def task(self, *args, **kwargs):
+            def wrapper(f):
+                f.delay = lambda *a, **k: type('MockTask', (), {'id': 'mock-task-id'})()
+                return f
+            return wrapper
+    celery = MockCelery()
 
 # 3. WebSockets (Socket.IO) Setup
 socketio = SocketIO(app, cors_allowed_origins="*")
@@ -33,7 +59,11 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 tavily_client = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
-DATABASE = 'database.db'
+
+# Support Render Persistence via Disk
+# Mount a Disk to /var/lib/navora in Render dashboard for persistence
+PERSISTENT_DIR = os.getenv("RENDER_DISK_PATH", os.path.dirname(__file__))
+DATABASE = os.path.join(PERSISTENT_DIR, 'database.db')
 
 def get_db():
     conn = sqlite3.connect(DATABASE)
@@ -44,12 +74,37 @@ def init_db():
     with app.app_context():
         db = get_db()
         db.execute('''CREATE TABLE IF NOT EXISTS user_profiles (id INTEGER PRIMARY KEY, profile_data TEXT)''')
+        db.execute('''
+            CREATE TABLE IF NOT EXISTS applications (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                company TEXT NOT NULL,
+                role TEXT NOT NULL,
+                cover_letter TEXT,
+                job_url TEXT,
+                status TEXT DEFAULT \'Generated\',
+                created_at TEXT DEFAULT (datetime(\'now\', \'localtime\'))
+            )
+        ''')
         cur = db.cursor()
         cur.execute("SELECT id FROM user_profiles WHERE id = 1")
         if not cur.fetchone():
             default_profile = {"name": "Guest User", "education": "", "skills": [], "target_role": "None", "goals": "", "resume_requirements": "", "completeness": 0}
             db.execute("INSERT INTO user_profiles (id, profile_data) VALUES (1, ?)", (json.dumps(default_profile),))
         db.commit()
+
+def save_application(company, role, cover_letter, job_url=''):
+    db = get_db()
+    db.execute(
+        "INSERT INTO applications (company, role, cover_letter, job_url) VALUES (?, ?, ?, ?)",
+        (company, role, cover_letter, job_url)
+    )
+    db.commit()
+
+def get_applications():
+    cur = get_db().cursor()
+    cur.execute("SELECT * FROM applications ORDER BY id DESC")
+    rows = cur.fetchall()
+    return [dict(r) for r in rows]
 
 init_db()
 
@@ -337,9 +392,9 @@ def linkedin_profiler():
     
     try:
         # We use Tavily to scrape the public LinkedIn structure!
-        # LinkedIn blocks direct API access, so Tavily bypasses it by querying search indexing.
-        search_query = f"site:linkedin.com/in/ '{username}' profile experience skills"
-        search_results = tavily_client.search(query=search_query, max_results=3, search_depth="advanced")
+        # India is prioritized in the search to surface local career data first.
+        search_query = f"site:linkedin.com/in/ \"{username}\" India profile experience skills education"
+        search_results = tavily_client.search(query=search_query, max_results=5, search_depth="advanced")
         
         extracted_text = " ".join([(r.get('content') or '') + " " + (r.get('raw_content') or '') for r in search_results.get('results', [])])
         
@@ -367,8 +422,6 @@ def linkedin_profiler():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-import threading
-
 def background_auto_applier(role):
     # This runs asynchronously without blocking the user interface!
     profile = get_user_profile()
@@ -384,23 +437,33 @@ def background_auto_applier(role):
          
          results = search_results.get('results', [])
          if not results:
-             socketio.emit('bot_log', {'message': '<span class="text-amber-500">No live jobs found on GreenHouse/Lever matching this exact query right now. Attempting broader search...</span>'})
+             socketio.emit('bot_log', {'message': '<span class="text-amber-500">No live jobs found matching this query. Try a broader role name.</span>'})
+             socketio.emit('bot_status', {'status': 'IDLE'})
              return
              
-         socketio.emit('bot_log', {'message': f'Found {len(results)} active ATS applications. Booting Gemini to generate custom Cover Letters.'})
+         socketio.emit('bot_log', {'message': f'Found {len(results)} active job listings. Booting Gemini to generate custom Cover Letters.'})
+         socketio.emit('bot_stats', {'jobs': len(results), 'applied': 0, 'cv': 0})
          
+         applied_count = 0
          for i, job in enumerate(results):
              time.sleep(1)
              company = job['title'].split(' at ')
              company_name = company[-1].strip() if len(company) > 1 else 'Startup'
              
-             socketio.emit('bot_log', {'message': f"[{i+1}/{len(results)}] Generating tailored application for <b class='text-white'>{company_name}</b>..."})
+             socketio.emit('bot_log', {'message': f"[{i+1}/{len(results)}] Generating tailored cover letter for <b class='text-white'>{company_name}</b>..."})
              
-             # Call Gemini to dynamically generate customized application
+             # Call Gemini to dynamically generate customized cover letter
              prompt = f"You represent {profile.get('name', 'Navora User')}. Write an ultra-short, highly technical 2-sentence cover letter snippet for an internship at {company_name}. The role is {role}. Do NOT use markdown. Be confident, mention {', '.join(profile.get('skills', [])[:3]) if profile.get('skills') else 'coding'}."
              res = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt)
+             cover_letter = res.text
+             job_url = job.get('url', '')
+             applied_count += 1
              
-             socketio.emit('bot_log', {'message': f"<span class='text-emerald-400 font-bold'>✓ Form Autofilled & Submitted!</span> -> {company_name} via headless Chromium.<br><span class='text-slate-500 pl-4 border-l-2 border-slate-700 italic ml-2'>{res.text[:120]}...</span>"})
+             # Save to database
+             save_application(company_name, role, cover_letter, job_url)
+             
+             socketio.emit('bot_log', {'message': f"<span class='text-emerald-400 font-bold'>\u2713 Saved to Applications Log!</span> \u2192 {company_name}<br><span class='text-slate-500 pl-4 border-l-2 border-slate-700 italic ml-2'>{cover_letter[:120]}...</span>"})
+             socketio.emit('bot_stats', {'jobs': len(results), 'applied': applied_count, 'cv': applied_count})
              time.sleep(2.5)
              
          socketio.emit('bot_log', {'message': f'<span class="text-indigo-400 font-bold mb-4 block">==== Bot Session Complete ====</span> Auto-applied to {len(results)} companies! Charging $1.50/API usage to your Stripe balance (Simulation).'})
@@ -420,6 +483,35 @@ def auto_apply_trigger():
     socketio.emit('bot_status', {'status': 'RUNNING'})
     threading.Thread(target=background_auto_applier, args=(role,)).start()
     return jsonify({"status": "Bot launched in background."})
+
+@app.route('/api/applications', methods=['GET'])
+def list_applications():
+    try:
+        apps = get_applications()
+        return jsonify(apps)
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/applications/<int:app_id>', methods=['DELETE'])
+def delete_application(app_id):
+    try:
+        db = get_db()
+        db.execute("DELETE FROM applications WHERE id = ?", (app_id,))
+        db.commit()
+        return jsonify({"status": "deleted"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/api/applications/<int:app_id>/status', methods=['PATCH'])
+def update_application_status(app_id):
+    status = request.json.get('status', 'Applied')
+    try:
+        db = get_db()
+        db.execute("UPDATE applications SET status = ? WHERE id = ?", (status, app_id))
+        db.commit()
+        return jsonify({"status": "updated"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 def get_aicte_internships(search_term, location_term):
     session = requests.Session()

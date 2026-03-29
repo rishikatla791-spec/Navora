@@ -51,6 +51,7 @@
                     <div class="nav-item" onclick="switchTab('trends')" id="nav-trends"><i data-lucide="trending-up"></i> Industry Trends</div>
                     <div class="nav-item" onclick="switchTab('roadmap')" id="nav-roadmap"><i data-lucide="map"></i> AI Roadmap</div>
                     <div class="nav-item" onclick="switchTab('profile')" id="nav-profile"><i data-lucide="user"></i> Profile Setup</div>
+                    <div class="nav-item relative" onclick="switchTab('autobot')" id="nav-autobot"><i data-lucide="bot"></i> Auto-Applier <span class="ml-auto text-[10px] bg-indigo-600 text-white px-1.5 py-0.5 rounded-md font-bold tracking-wide">PRO</span></div>
                 </nav>
             </div>
             
@@ -81,9 +82,27 @@
                         </div>
                         <div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><i data-lucide="target" class="text-blue-500"></i></div>
                     </div>
-                    
+
+                    <div class="glass-card p-6 rounded-2xl flex items-start justify-between min-w-0">
+                        <div class="min-w-0">
+                            <p class="text-slate-500 font-medium mb-1">Target Role</p>
+                            <h4 class="text-xl font-bold text-slate-800 truncate" id="dash-role" title="Not set">Not set</h4>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100 shrink-0 ml-2"><i data-lucide="briefcase" class="text-indigo-500"></i></div>
+                    </div>
+
+                    <div class="glass-card p-6 rounded-2xl flex items-start justify-between">
+                        <div>
+                            <p class="text-slate-500 font-medium mb-1">Total Skills</p>
+                            <h4 class="text-3xl font-bold text-slate-800" id="dash-skills-count">0</h4>
+                        </div>
+                        <div class="p-3 bg-slate-50 rounded-xl border border-slate-100"><i data-lucide="zap" class="text-amber-500"></i></div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                     <!-- God-Level Pro Ad / Interview Trigger -->
-                    <div class="glass-card p-6 rounded-2xl flex flex-col justify-between col-span-2 bg-gradient-to-r from-slate-900 to-indigo-900 border-none relative overflow-hidden group cursor-pointer" onclick="openInterviewModal()">
+                    <div class="glass-card p-6 rounded-2xl flex flex-col justify-between bg-gradient-to-r from-slate-900 to-indigo-900 border-none relative overflow-hidden group cursor-pointer" onclick="openInterviewModal()">
                         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
                         <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full filter blur-3xl opacity-30 group-hover:opacity-50 transition duration-500"></div>
                         <div class="relative z-10 flex justify-between items-center h-full">
@@ -184,6 +203,105 @@
                     </div>
                     <div id="roadmap-container" class="space-y-6 flex-1 overflow-y-auto pr-2">
                         <p class="text-slate-500">Pick a target goal and click generate to view your AI career roadmap.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auto-Applier Autopilot Tab -->
+            <div id="tab-autobot" class="tab-content h-full flex flex-col gap-6">
+                <header class="mb-2">
+                    <div class="flex items-center gap-3 mb-2">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
+                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-3xl font-bold text-slate-800">Autopilot Auto-Applier</h2>
+                            <p class="text-slate-500 text-sm">Set it and forget it — Navora applies to hundreds of jobs while you sleep.</p>
+                        </div>
+                    </div>
+                </header>
+
+                <!-- Config Card -->
+                <div class="glass-card p-6 rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50/60 to-teal-50/60">
+                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5 text-emerald-600"></i> Bot Configuration</h3>
+                    <div class="flex flex-col md:flex-row gap-4 items-end">
+                        <div class="flex-1">
+                            <label class="block text-sm font-medium text-slate-600 mb-1">Target Role</label>
+                            <input type="text" id="bot-target-role" placeholder="e.g. Software Engineer Intern, Data Analyst" class="w-full px-4 py-3 rounded-xl input-modern text-slate-800 font-medium" value="Software Engineer Intern">
+                        </div>
+                        <button id="btn-start-bot" onclick="startAutoBot()" class="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-200 hover:scale-105 transition-all duration-200 shrink-0">
+                            Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>
+                        </button>
+                    </div>
+                    <div class="flex items-center gap-3 mt-4">
+                        <div class="flex items-center gap-2 text-sm">
+                            <span class="text-slate-500">Bot Status:</span>
+                            <span class="font-bold text-slate-700" id="bot-status">IDLE</span>
+                        </div>
+                        <div id="bot-pulse" class="hidden flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block"></span>
+                            <span class="text-xs text-emerald-600 font-medium">Running in background...</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats Row -->
+                <div class="grid grid-cols-3 gap-4">
+                    <div class="glass-card p-4 rounded-2xl text-center">
+                        <p class="text-2xl font-bold text-emerald-600" id="bot-stat-applied">0</p>
+                        <p class="text-xs text-slate-500 mt-1">Applications Sent</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl text-center">
+                        <p class="text-2xl font-bold text-indigo-600" id="bot-stat-jobs">0</p>
+                        <p class="text-xs text-slate-500 mt-1">Jobs Found</p>
+                    </div>
+                    <div class="glass-card p-4 rounded-2xl text-center">
+                        <p class="text-2xl font-bold text-amber-600" id="bot-stat-cv">0</p>
+                        <p class="text-xs text-slate-500 mt-1">Custom CVs Generated</p>
+                    </div>
+                </div>
+
+                <!-- Resizable Split Panel: Terminal + Applications Log -->
+                <div id="split-container" class="flex flex-col flex-1 gap-0 rounded-2xl overflow-hidden border border-slate-200 shadow-xl" style="min-height: 400px;">
+
+                    <!-- Top: Live Terminal -->
+                    <div id="terminal-panel" class="bg-slate-950 flex flex-col overflow-hidden" style="height: 260px; min-height: 80px;">
+                        <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800 bg-slate-900 shrink-0">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                            <span class="ml-3 text-xs text-slate-500 font-mono">navora-autopilot -- bash</span>
+                            <span class="ml-auto text-xs text-emerald-500 font-mono animate-pulse" id="bot-terminal-status">● LIVE</span>
+                        </div>
+                        <div id="bot-terminal" class="flex-1 overflow-y-auto p-5 font-mono text-sm text-emerald-400 leading-relaxed">
+                            <div class="text-slate-600">Navora Autopilot v1.0 — Ready. Enter your target role and click Launch.</div>
+                            <div class="text-slate-700 mt-1">Waiting for instructions...</div>
+                        </div>
+                    </div>
+
+                    <!-- Drag Handle -->
+                    <div id="drag-handle" class="h-2 bg-slate-800 hover:bg-indigo-600 cursor-row-resize flex items-center justify-center shrink-0 group transition-colors duration-150" title="Drag to resize">
+                        <div class="w-10 h-0.5 bg-slate-600 group-hover:bg-white rounded-full transition-colors"></div>
+                    </div>
+
+                    <!-- Bottom: Applications Log -->
+                    <div id="log-panel" class="bg-white flex flex-col overflow-hidden flex-1" style="min-height: 80px;">
+                        <div class="flex items-center justify-between px-6 py-3 border-b border-slate-100 shrink-0">
+                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
+                                <i data-lucide="archive" class="w-5 h-5 text-indigo-500"></i>
+                                Applications Log
+                                <span class="ml-2 text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-semibold" id="app-count-badge">0 saved</span>
+                            </h3>
+                            <button onclick="loadApplicationsLog()" class="text-xs text-indigo-500 hover:text-indigo-700 font-medium flex items-center gap-1">
+                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
+                            </button>
+                        </div>
+                        <div id="applications-log" class="flex-1 overflow-y-auto divide-y divide-slate-100">
+                            <div class="p-8 text-center text-slate-400 text-sm">
+                                <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
+                                No applications yet. Run the bot to generate cover letters.
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -357,7 +475,41 @@
             lucide.createIcons();
             
             if(tabId === 'dashboard') loadProfile();
+            if(tabId === 'autobot') loadApplicationsLog();
         }
+
+        // --- Resizable Split Panel (Terminal / Applications Log) ---
+        (function() {
+            const handle = document.getElementById('drag-handle');
+            const termPanel = document.getElementById('terminal-panel');
+            const container = document.getElementById('split-container');
+            let dragging = false, startY = 0, startH = 0;
+
+            if (!handle) return;
+
+            handle.addEventListener('mousedown', (e) => {
+                dragging = true;
+                startY = e.clientY;
+                startH = termPanel.offsetHeight;
+                document.body.style.cursor = 'row-resize';
+                document.body.style.userSelect = 'none';
+            });
+
+            document.addEventListener('mousemove', (e) => {
+                if (!dragging) return;
+                const delta = e.clientY - startY;
+                const containerH = container.offsetHeight;
+                const newH = Math.min(Math.max(startH + delta, 80), containerH - 80 - 8);
+                termPanel.style.height = newH + 'px';
+            });
+
+            document.addEventListener('mouseup', () => {
+                if (!dragging) return;
+                dragging = false;
+                document.body.style.cursor = '';
+                document.body.style.userSelect = '';
+            });
+        })();
 
         async function loadProfile() {
             try {
@@ -365,7 +517,9 @@
                 const data = await res.json();
                 document.getElementById('dash-completeness').innerText = (data.completeness || 0) + '%';
                 const role = data.target_role || 'Not set';
-                document.getElementById('dash-role').innerText = role;
+                const roleEl = document.getElementById('dash-role');
+                roleEl.innerText = role;
+                roleEl.title = role;
                 document.getElementById('dash-skills-count').innerText = (data.skills || []).length;
                 document.getElementById('sidebar-user-name').innerText = data.name || 'Guest User';
                 document.getElementById('sidebar-user-initial').innerText = (data.name || 'U').charAt(0).toUpperCase();
@@ -680,9 +834,6 @@
             document.getElementById('bot-status').innerText = 'STARTING';
             document.getElementById('bot-pulse').classList.remove('hidden');
             
-            // Connect socket if not already connected
-            if (!socket) socket = io();
-            
             try {
                 const res = await fetch('/api/bot/auto-apply', {
                     method: 'POST',
@@ -701,9 +852,112 @@
                 lucide.createIcons();
             }
         }
-        
-        // Setup Bot Event Listeners globally so they catch even if user navigates tabs.
-        // Needs to run on boot! We can just do it lazily inside startAutoBot or loadProfile.
+
+        async function loadApplicationsLog() {
+            const container = document.getElementById('applications-log');
+            const badge = document.getElementById('app-count-badge');
+            container.innerHTML = '<div class="p-6 text-center text-slate-400 text-sm animate-pulse">Loading applications...</div>';
+
+            try {
+                const res = await fetch('/api/applications');
+                const apps = await res.json();
+
+                if (!apps.length) {
+                    container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>No applications yet. Run the bot to generate cover letters.</div>`;
+                    badge.innerText = '0 saved';
+                    lucide.createIcons();
+                    return;
+                }
+
+                badge.innerText = `${apps.length} saved`;
+                const statusColors = { 'Generated': 'bg-blue-100 text-blue-700', 'Applied': 'bg-emerald-100 text-emerald-700', 'Rejected': 'bg-red-100 text-red-700' };
+
+                container.innerHTML = apps.map(app => `
+                    <div class="p-5 hover:bg-slate-50 transition" id="app-row-${app.id}">
+                        <div class="flex items-start justify-between gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex items-center gap-2 mb-1 flex-wrap">
+                                    <h4 class="font-bold text-slate-800 text-base">${app.company}</h4>
+                                    <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${statusColors[app.status] || 'bg-gray-100 text-gray-600'}">${app.status}</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mb-2">🎯 ${app.role} &nbsp;•&nbsp; 🕐 ${app.created_at}</p>
+                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 leading-relaxed italic mb-3 max-h-20 overflow-hidden transition-all" id="cl-${app.id}">
+                                    "${app.cover_letter}"
+                                </div>
+                                <div class="flex gap-2 flex-wrap">
+                                    <button onclick="copyToClipboard(event, \`${app.cover_letter.replace(/`/g, '\\`').replace(/\${/g, '\\${')}\`)" class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium flex items-center gap-1 transition">
+                                        <i data-lucide="copy" class="w-3 h-3"></i> Copy Letter
+                                    </button>
+                                    ${app.job_url ? `<a href="${app.job_url}" target="_blank" class="text-xs px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 font-medium flex items-center gap-1 transition"><i data-lucide="external-link" class="w-3 h-3"></i> View Job</a>` : ''}
+                                    ${app.status !== 'Applied' ? `<button onclick="markAppStatus(${app.id}, 'Applied')" class="text-xs px-3 py-1.5 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 font-medium flex items-center gap-1 transition"><i data-lucide="check" class="w-3 h-3"></i> Mark Applied</button>` : ''}
+                                    <button onclick="deleteApplication(${app.id})" class="text-xs px-3 py-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-medium flex items-center gap-1 transition ml-auto">
+                                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+
+            } catch(e) {
+                container.innerHTML = `<div class="p-6 text-red-500 text-sm">Error loading applications: ${e.message}</div>`;
+            }
+        }
+
+        async function copyToClipboard(e, text) {
+            const btn = e.currentTarget;
+            const originalHtml = btn.innerHTML;
+            
+            try {
+                if (navigator.clipboard && window.isSecureContext) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    // Fallback for non-https or older browsers
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-999999px";
+                    textArea.style.top = "-999999px";
+                    document.body.appendChild(textArea);
+                    textArea.focus();
+                    textArea.select();
+                    document.execCommand('copy');
+                    textArea.remove();
+                }
+                
+                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Copied!';
+                lucide.createIcons();
+                btn.classList.add('bg-emerald-50', 'text-emerald-600');
+                
+                setTimeout(() => { 
+                    btn.innerHTML = originalHtml; 
+                    btn.classList.remove('bg-emerald-50', 'text-emerald-600');
+                    lucide.createIcons(); 
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy: ', err);
+                alert('Could not copy text. Please select and copy manually.');
+            }
+        }
+
+        async function markAppStatus(id, status) {
+            await fetch(`/api/applications/${id}/status`, {
+                method: 'PATCH',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({status})
+            });
+            loadApplicationsLog();
+        }
+
+        async function deleteApplication(id) {
+            if(!confirm('Delete this application from your log?')) return;
+            await fetch(`/api/applications/${id}`, { method: 'DELETE' });
+            document.getElementById(`app-row-${id}`)?.remove();
+            const badge = document.getElementById('app-count-badge');
+            const current = parseInt(badge.innerText) || 1;
+            badge.innerText = `${Math.max(0, current - 1)} saved`;
+        }
 
         async function loadTrends() {
             const container = document.getElementById('trends-container');
@@ -848,8 +1102,19 @@
                     btn.innerHTML = 'Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>';
                     btn.disabled = false;
                 }
+                // Auto-refresh the applications log when bot finishes
+                loadApplicationsLog();
             }
             lucide.createIcons();
+        });
+        
+        socket.on('bot_stats', (data) => {
+            const applied = document.getElementById('bot-stat-applied');
+            const jobs = document.getElementById('bot-stat-jobs');
+            const cv = document.getElementById('bot-stat-cv');
+            if(applied) applied.innerText = data.applied ?? 0;
+            if(jobs) jobs.innerText = data.jobs ?? 0;
+            if(cv) cv.innerText = data.cv ?? 0;
         });
         
         // Initialize Speech API
