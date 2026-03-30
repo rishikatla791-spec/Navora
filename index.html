@@ -317,6 +317,9 @@
                         <button onclick="downloadResume()" id="btn-resume-pdf" class="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm font-medium w-48">
                             <i data-lucide="file-down" class="w-5 h-5"></i><span>Get Resume (PDF)</span>
                         </button>
+                        <button onclick="generatePortfolio()" id="btn-generate-portfolio" class="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition shadow-sm font-medium w-48 group">
+                            <i data-lucide="wand-2" class="w-5 h-5 group-hover:rotate-12 transition"></i><span>3D Portfolio (ZIP)</span>
+                        </button>
                         <div class="flex flex-col gap-2 w-48">
                             <div class="flex items-center gap-1 w-full">
                                 <input type="text" id="github-username" placeholder="GitHub Username" class="flex-1 w-full px-3 py-2 rounded-l-xl input-modern text-sm border-r-0 h-[40px]" onkeypress="if(event.key === 'Enter') syncGithub()">
@@ -369,7 +372,7 @@
                     </div>
                 </div>
             </div>
-
+            <!-- Removed Portfolio Tab -->
         </div>
     </div>
 
@@ -377,6 +380,42 @@
 
     <!-- Hidden Resume Render Container -->
     <div id="resume-container" style="display: none; width: 800px; padding: 40px; background: white; color: black; font-family: 'Inter', sans-serif;"></div>
+
+    <!-- 3D Portfolio Preview Modal -->
+    <div id="portfolio-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
+        <div class="bg-indigo-950 border border-slate-700 w-full max-w-6xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300 relative" id="portfolio-card">
+            <!-- Header -->
+            <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                    <h3 class="text-white font-bold text-lg ml-2 border-l border-slate-700 pl-4">Live Project Workspace <span class="text-xs ml-2 bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md">ULTRA</span></h3>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div id="portfolio-status" class="text-xs text-slate-400 font-mono mr-4"></div>
+                    <button onclick="downloadPortfolio()" id="btn-download-portfolio" style="display: none;" class="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white border border-slate-700 rounded-xl hover:bg-slate-700 transition text-sm font-bold">
+                        <i data-lucide="download" class="w-4 h-4"></i> Download .HTML
+                    </button>
+                    <button onclick="closePortfolioModal()" class="text-slate-400 hover:text-white transition bg-slate-800 p-2 rounded-full hover:bg-slate-700 ml-2">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <!-- Live Preview -->
+            <div class="flex-1 w-full bg-white relative">
+                <iframe id="portfolio-preview" class="w-full h-full border-0 absolute inset-0" sandbox="allow-scripts allow-same-origin"></iframe>
+                <div id="portfolio-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-md z-10 transition-opacity duration-300">
+                    <div class="w-20 h-20 bg-emerald-900/30 text-emerald-500 border border-emerald-500/30 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden">
+                        <i data-lucide="code" class="w-10 h-10 animate-pulse relative z-10"></i>
+                        <div class="absolute inset-0 bg-emerald-500/20 blur-xl"></div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white tracking-wide" id="portfolio-overlay-title">Gemini 3.0 Pro is Coding...</h3>
+                    <p class="text-slate-400 mt-2 text-center max-w-md text-sm leading-relaxed" id="portfolio-overlay-desc">Writing HTML, CSS, compiling animations and generating layout rules. This takes ~10 seconds.</p>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- God-Level Interview Modal -->
     <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
@@ -1069,6 +1108,106 @@
                 btn.disabled = false;
                 lucide.createIcons();
             }
+        }
+
+        let generatedPortfolioCode = "";
+
+        function openPortfolioModal() {
+            const modal = document.getElementById('portfolio-modal');
+            const card = document.getElementById('portfolio-card');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                modal.classList.remove('opacity-0');
+                card.classList.remove('scale-95');
+            }, 10);
+        }
+
+        function closePortfolioModal() {
+            const modal = document.getElementById('portfolio-modal');
+            const card = document.getElementById('portfolio-card');
+            modal.classList.add('opacity-0');
+            card.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
+
+        async function generatePortfolio() {
+            const btn = document.getElementById('btn-generate-portfolio');
+            const originalHtml = btn.innerHTML;
+            const overlay = document.getElementById('portfolio-overlay');
+            const status = document.getElementById('portfolio-status');
+            const btnDownload = document.getElementById('btn-download-portfolio');
+            
+            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>...</span>';
+            btn.disabled = true;
+            lucide.createIcons();
+            
+            // Open modal to show loading state
+            openPortfolioModal();
+            btnDownload.style.display = 'none';
+            document.getElementById('portfolio-preview').srcdoc = ''; // Clear previous
+            
+            overlay.innerHTML = `
+                <div class="flex flex-col items-center justify-center bg-slate-900/90 w-full h-full backdrop-blur-md">
+                    <div class="w-20 h-20 bg-emerald-900/30 text-emerald-500 border border-emerald-500/30 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden">
+                        <i data-lucide="code" class="w-10 h-10 animate-pulse relative z-10"></i>
+                        <div class="absolute inset-0 bg-emerald-500/20 blur-xl"></div>
+                    </div>
+                    <h3 class="text-2xl font-bold text-white tracking-wide">Gemini 3.0 Pro is Coding...</h3>
+                    <p class="text-slate-400 mt-2 text-center max-w-md text-sm leading-relaxed">Writing HTML, CSS, compiling animations and generating layout rules. This takes ~10 seconds.</p>
+                </div>
+            `;
+            lucide.createIcons();
+            overlay.style.opacity = '1';
+            overlay.classList.remove('hidden');
+            status.innerText = 'Compiling DOM...';
+
+            try {
+                const res = await fetch('/api/portfolio/generate');
+                const data = await res.json();
+                
+                if (data.status === 'success') {
+                    generatedPortfolioCode = data.html;
+                    
+                    // Inject into iframe
+                    const iframe = document.getElementById('portfolio-preview');
+                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+                    iframeDoc.open();
+                    iframeDoc.write(generatedPortfolioCode);
+                    iframeDoc.close();
+                    
+                    // Show download button
+                    document.getElementById('btn-download-portfolio').style.display = 'flex';
+                    
+                    // Hide overlay
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.classList.add('hidden'), 300);
+                    status.innerText = 'Deployed to Local Preview';
+                } else {
+                    alert(data.error || 'Failed to generate portfolio');
+                    overlay.innerHTML = `<h3 class="text-red-500 font-bold">Error generating code.</h3><p class="text-slate-500 mt-2">${data.error}</p>`;
+                }
+            } catch (error) {
+                alert('Network error while generating portfolio.');
+                console.error(error);
+                overlay.innerHTML = `<h3 class="text-red-500 font-bold">Network Error.</h3>`;
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+                lucide.createIcons();
+            }
+        }
+
+        function downloadPortfolio() {
+            if (!generatedPortfolioCode) return alert("Nothing to download yet!");
+            const blob = new Blob([generatedPortfolioCode], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = 'personal_portfolio.html';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
         }
 
         // --- WEB SOCKET, VOICE API, & INTERVIEW ARCHITECTURE ---

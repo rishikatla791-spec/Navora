@@ -306,7 +306,9 @@ def generate_resume():
         return jsonify({"error": "Please chat with the assistant to add some skills to your profile first."}), 400
 
     prompt = f"""
-    Create a professional, clean, single-page resume formatted entirely in standard HTML (using inline CSS or generic semantic tags). DO NOT include markdown backticks (like ```html). DO NOT use external CSS classes that require a stylesheet.
+    Create a professional, highly compact, STRICTLY single-page resume formatted entirely in standard HTML. 
+    DO NOT include markdown backticks (like ```html). DO NOT use external CSS classes that require a stylesheet.
+    
     Use this profile data:
     Name: {profile.get('name', 'User')}
     Target Role: {profile.get('target_role', '')}
@@ -315,7 +317,11 @@ def generate_resume():
     Education: {profile.get('education', '')}
     Specific Resume Requirements (Follow strictly): {profile.get('resume_requirements', 'None specified')}
     
-    Structure the layout professionally with a header (name/role prominently displayed), a professional summary, core competencies/skills, and a section for education/goals. Keep it simple, elegant, and ready to be converted directly to a PDF.
+    CRITICAL INSTRUCTIONS FOR A 1-PAGE RESUME:
+    1. You MUST use inline CSS to set very tight margins (e.g., `margin: 0; padding: 10px; font-size: 11px; line-height: 1.3`).
+    2. Keep descriptions extremely concise. Use bullet points instead of long paragraphs.
+    3. Maximum length of the entire output should visually fit on ONE single standard Letter/A4 page. DO NOT hallucinate extra long fictional projects or experiences unless specifically asked.
+    4. Structure the layout with a compact header (name/role/contact), a brief summary (2-3 lines max), a tight grid or list of skills, and highly condensed education/experience sections.
     """
 
     for attempt in range(2):
@@ -329,6 +335,50 @@ def generate_resume():
             if attempt == 1:
                 return jsonify({"error": f"AI service error: {e}"}), 500
             time.sleep(2)
+
+@app.route('/api/portfolio/generate', methods=['GET'])
+def generate_portfolio():
+    profile = get_user_profile()
+    if not profile.get("skills"):
+        # We can still generate, but let's give them a warning if they are completely empty
+        pass
+
+    prompt = f"""
+    You are an elite frontend developer and UI/UX designer. Create a stunning, modern, fully animated, single-page personal portfolio website entirely in a single HTML file using TailwindCSS via CDN (https://cdn.tailwindcss.com).
+    
+    Use this profile data:
+    Name: {profile.get('name', 'User')}
+    Target Role: {profile.get('target_role', 'Tech Professional')}
+    Skills: {', '.join(str(s) for s in profile.get('skills', []))}
+    Background/Goals: {profile.get('goals', '')}
+    
+    Requirements:
+    - Return EXACTLY and ONLY valid HTML. Do not wrap in markdown ```html code blocks. No explanations. Start with <!DOCTYPE html>.
+    - Extremely modern aesthetics: dark mode by default, glassmorphism, nice gradient backgrounds, subtle blur effects.
+    - Include smooth animations, hover effects, and fade-ins on scroll.
+    - Include FontAwesome or Lucide icons via CDN.
+    - Structure: A massive Hero section with an animated background, an About Me section, a Skills section (displaying the skills provided as chic tags), a Projects section (make up 2 cool projects based on their target role), and a cool footer.
+    - Make it look like a $10,000 premium template.
+    """
+
+    for attempt in range(2):
+        try:
+            config = types.GenerateContentConfig(temperature=0.7)
+            response = client.models.generate_content(model='gemini-3-pro-preview', contents=prompt, config=config)
+            
+            html_content = response.text
+            if "```html" in html_content:
+                html_content = html_content.split("```html")[1].split("```")[0].strip()
+            elif "```" in html_content:
+                html_content = html_content.split("```")[1].split("```")[0].strip()
+            return jsonify({"status": "success", "html": html_content.strip()})
+        except Exception as e:
+            if attempt == 1:
+                import traceback
+                logging.error(f"Portfolio generation error: {e}\\n{traceback.format_exc()}")
+                return jsonify({"error": f"AI service error: {e}"}), 500
+            time.sleep(2)
+
 
 @app.route('/api/profile/github', methods=['POST'])
 def github_profiler():
