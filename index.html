@@ -55,12 +55,15 @@
                 </nav>
             </div>
             
-            <div class="p-4 bg-white/50 rounded-xl border border-slate-200 flex items-center gap-3">
+            <div class="p-4 bg-white/50 rounded-xl border border-slate-200 flex items-center gap-3 relative group">
                 <div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-600 font-medium" id="sidebar-user-initial">U</div>
-                <div>
-                    <p class="text-sm font-semibold text-slate-800" id="sidebar-user-name">Guest User</p>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm font-semibold text-slate-800 truncate" id="sidebar-user-name">Guest User</p>
                     <p class="text-xs text-slate-500">Learner</p>
                 </div>
+                <button id="logout-btn" class="p-2 text-slate-400 hover:text-red-500 transition-colors" title="Logout">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                </button>
             </div>
         </div>
 
@@ -317,8 +320,8 @@
                         <button onclick="downloadResume()" id="btn-resume-pdf" class="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm font-medium w-48">
                             <i data-lucide="file-down" class="w-5 h-5"></i><span>Get Resume (PDF)</span>
                         </button>
-                        <button onclick="generatePortfolio()" id="btn-generate-portfolio" class="flex items-center justify-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl hover:bg-emerald-700 transition shadow-sm font-medium w-48 group">
-                            <i data-lucide="wand-2" class="w-5 h-5 group-hover:rotate-12 transition"></i><span>3D Portfolio (ZIP)</span>
+                        <button onclick="generatePortfolio()" id="btn-generate-portfolio" class="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-400 hover:to-teal-400 transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] font-bold w-48 group border border-emerald-400/30">
+                            <i data-lucide="sparkles" class="w-5 h-5 group-hover:rotate-12 transition text-yellow-200"></i><span>3D Portfolio</span>
                         </button>
                         <div class="flex flex-col gap-2 w-48">
                             <div class="flex items-center gap-1 w-full">
@@ -509,8 +512,8 @@
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             
-            document.getElementById(`tab-${tabId}`).classList.add('active');
-            document.getElementById(`nav-${tabId}`).classList.add('active');
+            document.getElementById(`tab-${tabId}`).classList.add('active`);
+            document.getElementById(`nav-${tabId}`).classList.add('active`);
             lucide.createIcons();
             
             if(tabId === 'dashboard') loadProfile();
@@ -519,9 +522,9 @@
 
         // --- Resizable Split Panel (Terminal / Applications Log) ---
         (function() {
-            const handle = document.getElementById('drag-handle');
-            const termPanel = document.getElementById('terminal-panel');
-            const container = document.getElementById('split-container');
+            const handle = document.getElementById('drag-handle`);
+            const termPanel = document.getElementById('terminal-panel`);
+            const container = document.getElementById('split-container`);
             let dragging = false, startY = 0, startH = 0;
 
             if (!handle) return;
@@ -552,11 +555,11 @@
 
         async function loadProfile() {
             try {
-                const res = await fetch('/api/profile');
+                const res = await fetch(`${RENDER_URL}/api/profile`);
                 const data = await res.json();
                 document.getElementById('dash-completeness').innerText = (data.completeness || 0) + '%';
                 const role = data.target_role || 'Not set';
-                const roleEl = document.getElementById('dash-role');
+                const roleEl = document.getElementById('dash-role`);
                 roleEl.innerText = role;
                 roleEl.title = role;
                 document.getElementById('dash-skills-count').innerText = (data.skills || []).length;
@@ -577,7 +580,7 @@
             const file = event.target.files[0];
             if(file) {
                 currentFile = file;
-                document.getElementById('file-preview').classList.remove('hidden');
+                document.getElementById('file-preview').classList.remove('hidden`);
                 document.getElementById('file-name').innerText = file.name;
             }
         }
@@ -585,7 +588,7 @@
         function removeFile() {
             currentFile = null;
             document.getElementById('file-upload').value = '';
-            document.getElementById('file-preview').classList.add('hidden');
+            document.getElementById('file-preview').classList.add('hidden`);
         }
 
         function handleChatEnter(e) {
@@ -596,8 +599,8 @@
         }
 
         function appendMessage(role, text) {
-            const chatContainer = document.getElementById('chat-history');
-            const msgDiv = document.createElement('div');
+            const chatContainer = document.getElementById('chat-history`);
+            const msgDiv = document.createElement('div`);
             
             if(role === 'user') {
                 msgDiv.className = 'flex gap-3 max-w-[85%] ml-auto justify-end';
@@ -626,7 +629,7 @@
         }
 
         async function sendChatMessage() {
-            const input = document.getElementById('chat-input');
+            const input = document.getElementById('chat-input`);
             const text = input.value.trim();
             if(!text && !currentFile) return;
 
@@ -656,12 +659,12 @@
             const payloadHistory = [...chatHistory];
             chatHistory.push({role: 'user', text: displayText});
             
-            const btn = document.getElementById('send-btn');
+            const btn = document.getElementById('send-btn`);
             btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
             btn.disabled = true;
 
             try {
-                const res = await fetch('/api/profile/chat', {
+                const res = await fetch(`${RENDER_URL}/api/profile/chat', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({
@@ -681,7 +684,7 @@
                     appendMessage('assistant', 'Error: ' + (data.error || 'Unknown error'));
                 }
             } catch(e) {
-                appendMessage('assistant', 'Sorry, a network error occurred.');
+                appendMessage('assistant', 'Sorry, a network error occurred.`);
             } finally {
                 btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i>';
                 btn.disabled = false;
@@ -691,11 +694,11 @@
 
         function toggleLocationInput() {
             const source = document.querySelector('input[name="search_source"]:checked').value;
-            const locContainer = document.getElementById('location-input-container');
+            const locContainer = document.getElementById('location-input-container`);
             if (source === 'aicte') {
-                locContainer.classList.remove('hidden');
+                locContainer.classList.remove('hidden`);
             } else {
-                locContainer.classList.add('hidden');
+                locContainer.classList.add('hidden`);
             }
         }
 
@@ -707,8 +710,8 @@
             const source = document.querySelector('input[name="search_source"]:checked').value;
             const location = document.getElementById('internship-location')?.value || '';
             
-            const btn = document.getElementById('internship-btn');
-            const resultsDiv = document.getElementById('internship-results');
+            const btn = document.getElementById('internship-btn`);
+            const resultsDiv = document.getElementById('internship-results`);
             
             btn.innerHTML = 'Searching...'; btn.disabled = true;
             resultsDiv.innerHTML = `<div class="p-8 text-center text-slate-500">Searching ${source.toUpperCase()} data...</div>`;
@@ -757,10 +760,10 @@
         }
 
         async function loadRecommendations() {
-            const container = document.getElementById('recommendations-container');
+            const container = document.getElementById('recommendations-container`);
             container.innerHTML = '<div class="text-slate-500 animate-pulse">Generating AI recommendations...</div>';
             try {
-                const res = await fetch('/api/recommendations');
+                const res = await fetch(`${RENDER_URL}/api/recommendations`);
                 const data = res.ok ? await res.json() : await res.json().then(x => {throw new Error(x.error)});
                 
                 const gap = data.skill_gap || {};
@@ -791,7 +794,7 @@
             const username = document.getElementById('github-username').value.trim();
             if (!username) return alert("Please enter a GitHub username");
             
-            const btn = document.getElementById('btn-github-sync');
+            const btn = document.getElementById('btn-github-sync`);
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
             btn.disabled = true;
@@ -800,7 +803,7 @@
             appendMessage('user', `Please scan my GitHub profile: ${username}`);
             
             try {
-                const res = await fetch('/api/profile/github', {
+                const res = await fetch(`${RENDER_URL}/api/profile/github', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({username})
@@ -815,7 +818,7 @@
                     appendMessage('assistant', `Error syncing GitHub: ${data.error}`);
                 }
             } catch (e) {
-                appendMessage('assistant', 'Network error during GitHub sync.');
+                appendMessage('assistant', 'Network error during GitHub sync.`);
             } finally {
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
@@ -828,7 +831,7 @@
             const urlRaw = document.getElementById('linkedin-url').value.trim();
             if (!urlRaw) return alert("Please enter a LinkedIn URL or Username");
             
-            const btn = document.getElementById('btn-linkedin-sync');
+            const btn = document.getElementById('btn-linkedin-sync`);
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
             btn.disabled = true;
@@ -837,7 +840,7 @@
             appendMessage('user', `Please scan my LinkedIn profile: ${urlRaw}`);
             
             try {
-                const res = await fetch('/api/profile/linkedin', {
+                const res = await fetch(`${RENDER_URL}/api/profile/linkedin', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({linkedin_url: urlRaw})
@@ -852,7 +855,7 @@
                     appendMessage('assistant', `Error syncing LinkedIn: ${data.error}`);
                 }
             } catch (e) {
-                appendMessage('assistant', 'Network error during LinkedIn sync.');
+                appendMessage('assistant', 'Network error during LinkedIn sync.`);
             } finally {
                 btn.innerHTML = originalHtml;
                 btn.disabled = false;
@@ -865,16 +868,16 @@
             const role = document.getElementById('bot-target-role').value.trim();
             if(!role) return alert("Please specify the exact role you want the bot to mass-apply for.");
             
-            const btn = document.getElementById('btn-start-bot');
+            const btn = document.getElementById('btn-start-bot`);
             btn.innerHTML = 'Connecting to Cloud...';
             btn.disabled = true;
             
             document.getElementById('bot-terminal').innerHTML = '<div class="text-slate-600">Booting Navora Autopilot script...</div>';
             document.getElementById('bot-status').innerText = 'STARTING';
-            document.getElementById('bot-pulse').classList.remove('hidden');
+            document.getElementById('bot-pulse').classList.remove('hidden`);
             
             try {
-                const res = await fetch('/api/bot/auto-apply', {
+                const res = await fetch(`${RENDER_URL}/api/bot/auto-apply', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify({target_role: role})
@@ -893,12 +896,12 @@
         }
 
         async function loadApplicationsLog() {
-            const container = document.getElementById('applications-log');
-            const badge = document.getElementById('app-count-badge');
+            const container = document.getElementById('applications-log`);
+            const badge = document.getElementById('app-count-badge`);
             container.innerHTML = '<div class="p-6 text-center text-slate-400 text-sm animate-pulse">Loading applications...</div>';
 
             try {
-                const res = await fetch('/api/applications');
+                const res = await fetch(`${RENDER_URL}/api/applications`);
                 const apps = await res.json();
 
                 if (!apps.length) {
@@ -936,7 +939,7 @@
                             </div>
                         </div>
                     </div>
-                `).join('');
+                `).join(`);
                 lucide.createIcons();
 
             } catch(e) {
@@ -961,22 +964,22 @@
                     document.body.appendChild(textArea);
                     textArea.focus();
                     textArea.select();
-                    document.execCommand('copy');
+                    document.execCommand('copy`);
                     textArea.remove();
                 }
                 
                 btn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Copied!';
                 lucide.createIcons();
-                btn.classList.add('bg-emerald-50', 'text-emerald-600');
+                btn.classList.add('bg-emerald-50', 'text-emerald-600`);
                 
                 setTimeout(() => { 
                     btn.innerHTML = originalHtml; 
-                    btn.classList.remove('bg-emerald-50', 'text-emerald-600');
+                    btn.classList.remove('bg-emerald-50', 'text-emerald-600`);
                     lucide.createIcons(); 
                 }, 2000);
             } catch (err) {
                 console.error('Failed to copy: ', err);
-                alert('Could not copy text. Please select and copy manually.');
+                alert('Could not copy text. Please select and copy manually.`);
             }
         }
 
@@ -992,17 +995,17 @@
         async function deleteApplication(id) {
             if(!confirm('Delete this application from your log?')) return;
             await fetch(`/api/applications/${id}`, { method: 'DELETE' });
-            document.getElementById(`app-row-${id}`)?.remove();
-            const badge = document.getElementById('app-count-badge');
+            document.getElementById(`app-row-${id}`).remove();
+            const badge = document.getElementById('app-count-badge`);
             const current = parseInt(badge.innerText) || 1;
             badge.innerText = `${Math.max(0, current - 1)} saved`;
         }
 
         async function loadTrends() {
-            const container = document.getElementById('trends-container');
+            const container = document.getElementById('trends-container`);
             container.innerHTML = '<div class="text-slate-500 col-span-2 text-center py-8">Analyzing live trends...</div>';
             try {
-                const res = await fetch('/api/trends');
+                const res = await fetch(`${RENDER_URL}/api/trends`);
                 const data = await res.json();
                 if(data.trending?.length) {
                     container.innerHTML = data.trending.map(t => `
@@ -1013,7 +1016,7 @@
                             </div>
                             <p class="text-sm ${t.user_has ? 'text-green-600' : 'text-slate-500'}">${t.user_has ? '✓ You have this skill' : '○ Recommended to learn'}</p>
                         </div>
-                    `).join('');
+                    `).join(`);
                 } else {
                     container.innerHTML = '<div class="text-slate-500 col-span-2">No trend data available</div>';
                 }
@@ -1026,8 +1029,8 @@
             if (e) e.preventDefault();
             
             const targetInput = document.getElementById('roadmap-target').value.trim();
-            const btn = document.getElementById('roadmap-btn');
-            const container = document.getElementById('roadmap-container');
+            const btn = document.getElementById('roadmap-btn`);
+            const container = document.getElementById('roadmap-container`);
             
             btn.innerHTML = 'Generating...'; btn.disabled = true;
             container.innerHTML = '<div class="text-slate-500 animate-pulse text-center py-8">Generating your personal AI roadmap...</div>';
@@ -1072,18 +1075,18 @@
         }
 
         async function downloadResume() {
-            const btn = document.getElementById('btn-resume-pdf');
+            const btn = document.getElementById('btn-resume-pdf`);
             const originalHtml = btn.innerHTML;
             btn.innerHTML = '<div class="flex items-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>Drafting...</span></div>';
             btn.disabled = true;
             lucide.createIcons();
 
             try {
-                const res = await fetch('/api/resume/generate');
+                const res = await fetch(`${RENDER_URL}/api/resume/generate`);
                 const data = await res.json();
                 
                 if (data.status === 'success') {
-                    const container = document.getElementById('resume-container');
+                    const container = document.getElementById('resume-container`);
                     container.innerHTML = data.html;
                     container.style.display = 'block'; // make it renderable for html2pdf
                     
@@ -1098,10 +1101,10 @@
                     await html2pdf().set(opt).from(container).save();
                     container.style.display = 'none'; // re-hide
                 } else {
-                    alert(data.error || 'Failed to generate resume');
+                    alert(data.error || 'Failed to generate resume`);
                 }
             } catch (error) {
-                alert('Network error while generating resume.');
+                alert('Network error while generating resume.`);
                 console.error(error);
             } finally {
                 btn.innerHTML = originalHtml;
@@ -1113,29 +1116,29 @@
         let generatedPortfolioCode = "";
 
         function openPortfolioModal() {
-            const modal = document.getElementById('portfolio-modal');
-            const card = document.getElementById('portfolio-card');
-            modal.classList.remove('hidden');
+            const modal = document.getElementById('portfolio-modal`);
+            const card = document.getElementById('portfolio-card`);
+            modal.classList.remove('hidden`);
             setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                card.classList.remove('scale-95');
+                modal.classList.remove('opacity-0`);
+                card.classList.remove('scale-95`);
             }, 10);
         }
 
         function closePortfolioModal() {
-            const modal = document.getElementById('portfolio-modal');
-            const card = document.getElementById('portfolio-card');
-            modal.classList.add('opacity-0');
-            card.classList.add('scale-95');
+            const modal = document.getElementById('portfolio-modal`);
+            const card = document.getElementById('portfolio-card`);
+            modal.classList.add('opacity-0`);
+            card.classList.add('scale-95`);
             setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
         async function generatePortfolio() {
-            const btn = document.getElementById('btn-generate-portfolio');
+            const btn = document.getElementById('btn-generate-portfolio`);
             const originalHtml = btn.innerHTML;
-            const overlay = document.getElementById('portfolio-overlay');
-            const status = document.getElementById('portfolio-status');
-            const btnDownload = document.getElementById('btn-download-portfolio');
+            const overlay = document.getElementById('portfolio-overlay`);
+            const status = document.getElementById('portfolio-status`);
+            const btnDownload = document.getElementById('btn-download-portfolio`);
             
             btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>...</span>';
             btn.disabled = true;
@@ -1158,18 +1161,18 @@
             `;
             lucide.createIcons();
             overlay.style.opacity = '1';
-            overlay.classList.remove('hidden');
+            overlay.classList.remove('hidden`);
             status.innerText = 'Compiling DOM...';
 
             try {
-                const res = await fetch('/api/portfolio/generate');
+                const res = await fetch(`${RENDER_URL}/api/portfolio/generate`);
                 const data = await res.json();
                 
                 if (data.status === 'success') {
                     generatedPortfolioCode = data.html;
                     
                     // Inject into iframe
-                    const iframe = document.getElementById('portfolio-preview');
+                    const iframe = document.getElementById('portfolio-preview`);
                     const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
                     iframeDoc.open();
                     iframeDoc.write(generatedPortfolioCode);
@@ -1183,11 +1186,11 @@
                     setTimeout(() => overlay.classList.add('hidden'), 300);
                     status.innerText = 'Deployed to Local Preview';
                 } else {
-                    alert(data.error || 'Failed to generate portfolio');
+                    alert(data.error || 'Failed to generate portfolio`);
                     overlay.innerHTML = `<h3 class="text-red-500 font-bold">Error generating code.</h3><p class="text-slate-500 mt-2">${data.error}</p>`;
                 }
             } catch (error) {
-                alert('Network error while generating portfolio.');
+                alert('Network error while generating portfolio.`);
                 console.error(error);
                 overlay.innerHTML = `<h3 class="text-red-500 font-bold">Network Error.</h3>`;
             } finally {
@@ -1201,7 +1204,7 @@
             if (!generatedPortfolioCode) return alert("Nothing to download yet!");
             const blob = new Blob([generatedPortfolioCode], { type: 'text/html' });
             const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
+            const a = document.createElement('a`);
             a.style.display = 'none';
             a.href = url;
             a.download = 'personal_portfolio.html';
@@ -1219,7 +1222,7 @@
         
         // Auto-Applier Bot Logs Handlers
         socket.on('bot_log', (data) => {
-            const terminal = document.getElementById('bot-terminal');
+            const terminal = document.getElementById('bot-terminal`);
             if(terminal) {
                 const time = new Date().toLocaleTimeString();
                 terminal.insertAdjacentHTML('beforeend', `<div class="mb-2 leading-relaxed"><span class="text-slate-500 mr-2">[${time}]</span> <span class="text-slate-300">${data.message}</span></div>`);
@@ -1228,15 +1231,15 @@
         });
         
         socket.on('bot_status', (data) => {
-            const statusEl = document.getElementById('bot-status');
-            const pulseEl = document.getElementById('bot-pulse');
-            const btn = document.getElementById('btn-start-bot');
+            const statusEl = document.getElementById('bot-status`);
+            const pulseEl = document.getElementById('bot-pulse`);
+            const btn = document.getElementById('btn-start-bot`);
             
             if(statusEl) statusEl.innerText = data.status;
             if (data.status === 'RUNNING') {
-                if(pulseEl) pulseEl.classList.remove('hidden');
+                if(pulseEl) pulseEl.classList.remove('hidden`);
             } else {
-                if(pulseEl) pulseEl.classList.add('hidden');
+                if(pulseEl) pulseEl.classList.add('hidden`);
                 if(btn) {
                     btn.innerHTML = 'Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>';
                     btn.disabled = false;
@@ -1248,9 +1251,9 @@
         });
         
         socket.on('bot_stats', (data) => {
-            const applied = document.getElementById('bot-stat-applied');
-            const jobs = document.getElementById('bot-stat-jobs');
-            const cv = document.getElementById('bot-stat-cv');
+            const applied = document.getElementById('bot-stat-applied`);
+            const jobs = document.getElementById('bot-stat-jobs`);
+            const cv = document.getElementById('bot-stat-cv`);
             if(applied) applied.innerText = data.applied ?? 0;
             if(jobs) jobs.innerText = data.jobs ?? 0;
             if(cv) cv.innerText = data.cv ?? 0;
@@ -1267,7 +1270,7 @@
             
             recognition.onstart = function() {
                 isRecording = true;
-                document.getElementById('mic-icon').classList.add('text-red-500', 'animate-pulse');
+                document.getElementById('mic-icon').classList.add('text-red-500', 'animate-pulse`);
                 document.getElementById('interview-input').placeholder = "Listening directly to your microphone...";
             };
             
@@ -1281,7 +1284,7 @@
                         interimTranscript += event.results[i][0].transcript;
                     }
                 }
-                const inputField = document.getElementById('interview-input');
+                const inputField = document.getElementById('interview-input`);
                 if (finalTranscript) {
                     inputField.value = finalTranscript;
                     toggleVoiceInput(); // Auto stop listening when done speaking
@@ -1293,7 +1296,7 @@
             
             recognition.onerror = function(event) {
                 isRecording = false;
-                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse');
+                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse`);
                 document.getElementById('interview-input').placeholder = "Type your response to the recruiter...";
                 
                 // Extremely Explicit Voice Error Handling to debug why it crashed on their PC
@@ -1314,7 +1317,7 @@
             if (isRecording) {
                 isRecording = false;
                 recognition.stop();
-                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse');
+                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse`);
                 document.getElementById('interview-input').placeholder = "Type your response to the recruiter...";
             } else {
                 document.getElementById('interview-input').value = '';
@@ -1345,18 +1348,18 @@
 
         // Interview Stream Global Handler
         socket.on('interview_stream', (data) => {
-            const statusText = document.getElementById('interview-status');
-            const inputField = document.getElementById('interview-input');
-            const sendBtn = document.getElementById('btn-interview-send');
-            const micBtn = document.getElementById('btn-interview-mic');
-            const transcript = document.getElementById('interview-transcript');
-            const audioBar = document.getElementById('audio-bar');
+            const statusText = document.getElementById('interview-status`);
+            const inputField = document.getElementById('interview-input`);
+            const sendBtn = document.getElementById('btn-interview-send`);
+            const micBtn = document.getElementById('btn-interview-mic`);
+            const transcript = document.getElementById('interview-transcript`);
+            const audioBar = document.getElementById('audio-bar`);
             
             if (!statusText) return; // Ensures safe UI bounds
             
             if (data.status) {
                 statusText.innerText = data.status;
-                statusText.classList.add('animate-pulse', 'text-amber-400');
+                statusText.classList.add('animate-pulse', 'text-amber-400`);
             }
             
             if (data.bot_talking) {
@@ -1364,20 +1367,20 @@
                 sendBtn.disabled = true;
                 if(micBtn) micBtn.disabled = true;
                 inputField.placeholder = "Recruiter is analyzing...";
-                audioBar.classList.remove('h-6');
-                audioBar.classList.add('h-10');
+                audioBar.classList.remove('h-6`);
+                audioBar.classList.add('h-10`);
             } else if (data.text) {
                 // The bot has spoken!
                 statusText.innerText = "Your turn to speak or type.";
-                statusText.classList.remove('animate-pulse', 'text-amber-400');
-                statusText.classList.add('text-emerald-400');
+                statusText.classList.remove('animate-pulse', 'text-amber-400`);
+                statusText.classList.add('text-emerald-400`);
                 inputField.disabled = false;
                 sendBtn.disabled = false;
                 if(micBtn) micBtn.disabled = false;
                 inputField.placeholder = "Type your response to the recruiter...";
                 // if(!isRecording) inputField.focus(); 
-                audioBar.classList.remove('h-10');
-                audioBar.classList.add('h-6');
+                audioBar.classList.remove('h-10`);
+                audioBar.classList.add('h-6`);
                 // Extract [TIP] ... [/TIP]
                 let rawText = data.text;
                 let tipsHtml = '';
@@ -1387,11 +1390,11 @@
                         <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Notable Improvement Tips</p>
                         <p class="text-emerald-100 text-sm leading-relaxed italic">${tipMatch[1].trim().replace(/\n/g, '<br>')}</p>
                     </div>`;
-                    rawText = rawText.replace(tipMatch[0], '');
+                    rawText = rawText.replace(tipMatch[0], `);
                 }
                 
                 // Parse Markdown logic: **Text** -> Highly styled blocks
-                let formattedText = rawText.replace(/\*\*(.*?)\*\*/g, '<br><span class="font-bold text-indigo-300 bg-indigo-900/60 shadow-inner px-4 py-3 rounded-xl block border-l-4 border-indigo-500 mb-2 mt-2">$1</span>').replace(/\n/g, '<br>');
+                let formattedText = rawText.replace(/\*\*(.*?)\*\*/g, '<br><span class="font-bold text-indigo-300 bg-indigo-900/60 shadow-inner px-4 py-3 rounded-xl block border-l-4 border-indigo-500 mb-2 mt-2">$1</span>').replace(/\n/g, '<br>`);
                 
                 // Append the tips block
                 formattedText = formattedText + tipsHtml;
@@ -1414,14 +1417,14 @@
         });
 
         function openInterviewModal() {
-            const modal = document.getElementById('interview-modal');
-            const card = document.getElementById('interview-card');
-            modal.classList.remove('hidden');
+            const modal = document.getElementById('interview-modal`);
+            const card = document.getElementById('interview-card`);
+            modal.classList.remove('hidden`);
             
             // Trigger animation
             setTimeout(() => {
-                modal.classList.remove('opacity-0');
-                card.classList.remove('scale-95');
+                modal.classList.remove('opacity-0`);
+                card.classList.remove('scale-95`);
                 startWebcam(); // Turn on their camera!
                 metricInterval = setInterval(updateFakeMetrics, 3000); // Fluctuate metrics
             }, 10);
@@ -1433,10 +1436,10 @@
         // Initialize Speech API
         
         function closeInterviewModal() {
-            const modal = document.getElementById('interview-modal');
-            const card = document.getElementById('interview-card');
-            modal.classList.add('opacity-0');
-            card.classList.add('scale-95');
+            const modal = document.getElementById('interview-modal`);
+            const card = document.getElementById('interview-card`);
+            modal.classList.add('opacity-0`);
+            card.classList.add('scale-95`);
             
             // Turn off camera and mic
             if (isRecording) toggleVoiceInput();
@@ -1444,7 +1447,7 @@
             if (metricInterval) clearInterval(metricInterval);
             
             setTimeout(() => {
-                modal.classList.add('hidden');
+                modal.classList.add('hidden`);
                 // We DO NOT disconnect the global socket so background bots stay alive!
                 document.getElementById('interview-transcript').innerHTML = '<div class="text-center text-slate-500 text-sm py-4 border-b border-slate-700/50">End-to-end WebSocket connection established. Commencing technical screening.</div>';
                 document.getElementById('interview-input').disabled = true;
@@ -1454,11 +1457,11 @@
         }
         
         function sendInterviewMessage() {
-            const input = document.getElementById('interview-input');
+            const input = document.getElementById('interview-input`);
             const text = input.value.trim();
             if (!text || !socket) return;
             
-            const transcript = document.getElementById('interview-transcript');
+            const transcript = document.getElementById('interview-transcript`);
             if (isRecording) toggleVoiceInput(); // Turn off mic when sending
             
             // Render user text immediately
@@ -1486,6 +1489,63 @@
         }
 
         loadProfile();
+    </script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        // --- YOUR FIREBASE CONFIG ---
+        const firebaseConfig = {
+          apiKey: "AIzaSyDDFiZ2OAahWHNSxJWa7PFAzdHAEVf5lCc",
+          authDomain: "navora-a5c62.firebaseapp.com",
+          projectId: "navora-a5c62",
+          storageBucket: "navora-a5c62.firebasestorage.app",
+          messagingSenderId: "970616609774",
+          appId: "1:970616609774:web:e95117aac44c85415c8cff",
+          measurementId: "G-380697P1Y8"
+        };
+        // -----------------------------
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        // Global Auth Check
+        onAuthStateChanged(auth, (user) => {
+            const loadingOverlay = document.getElementById('auth-loading');
+            if (!user) {
+                console.log("No user found, redirecting to login...");
+                window.location.replace('login.html');
+            } else {
+                console.log("Authenticated as:", user.email);
+                // Update sidebar with real user info
+                const nameEl = document.getElementById('sidebar-user-name');
+                const initialEl = document.getElementById('sidebar-user-initial');
+                
+                if (user.displayName) {
+                    nameEl.innerText = user.displayName;
+                    initialEl.innerText = user.displayName.charAt(0).toUpperCase();
+                } else if (user.email) {
+                    nameEl.innerText = user.email.split('@')[0];
+                    initialEl.innerText = user.email.charAt(0).toUpperCase();
+                }
+
+                // Hide loading overlay
+                if (loadingOverlay) {
+                    loadingOverlay.style.opacity = '0';
+                    setTimeout(() => loadingOverlay.classList.add('hidden'), 500);
+                }
+            }
+        });
+
+        // Logout logic
+        document.getElementById('logout-btn').onclick = async () => {
+            try {
+                await signOut(auth);
+                window.location.href = '/login';
+            } catch (error) {
+                console.error("Logout failed", error);
+            }
+        };
     </script>
 </body>
 </html>

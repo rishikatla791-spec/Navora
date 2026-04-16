@@ -11,3 +11,5 @@ playwright
 sqlalchemy
 gunicorn
 eventlet
+firebase-admin
+flask-cors

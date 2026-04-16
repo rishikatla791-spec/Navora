@@ -1,0 +1,23 @@
+{
+  "hosting": {
+    "site": "navora-a5c62",
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "venv/**",
+      "__pycache__/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/login",
+        "destination": "/login.html"
+      },
+      {
+        "source": "/api/**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

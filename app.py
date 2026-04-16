@@ -26,11 +26,13 @@ except ImportError:
     logging.warning("playwright not installed — headless browser disabled")
 
 from flask_socketio import SocketIO, emit
+from flask_cors import CORS
 
 load_dotenv()
 
 logging.basicConfig(level=logging.INFO)
 app = Flask(__name__, static_folder='.', template_folder='.')
+CORS(app) # Enable CORS for all routes
 
 # --- ENTERPRISE CONFIGURATION ---
 # 1. Stripe Payment Setup
@@ -182,6 +184,9 @@ def call_gemini_json(prompt, system_instruction=None, max_retries=3, use_search=
 
 @app.route('/')
 def serve_index(): return send_from_directory('.', 'index.html')
+
+@app.route('/login')
+def serve_login(): return send_from_directory('.', 'login.html')
 
 @app.route('/api/profile', methods=['GET', 'PUT'])
 def handle_profile():
@@ -363,19 +368,29 @@ def generate_portfolio():
 
     for attempt in range(2):
         try:
-            config = types.GenerateContentConfig(temperature=0.7)
+            config = types.GenerateContentConfig(temperature=0.8)
             response = client.models.generate_content(model='gemini-3-pro-preview', contents=prompt, config=config)
             
-            html_content = response.text
+            html_content = response.text.strip()
+            # Clean markdown code blocks if present
             if "```html" in html_content:
                 html_content = html_content.split("```html")[1].split("```")[0].strip()
             elif "```" in html_content:
-                html_content = html_content.split("```")[1].split("```")[0].strip()
+                # Find the first and last occurrence of ```
+                parts = html_content.split("```")
+                if len(parts) >= 3:
+                    html_content = parts[1].strip()
+            
+            # Basic validation: must have DOCTYPE or <html>
+            if "<!DOCTYPE" not in html_content.upper() and "<HTML" not in html_content.upper():
+                # If it's just raw code without boilerplate, wrap it or retry
+                if attempt == 0: continue # Retry with next attempt
+
             return jsonify({"status": "success", "html": html_content.strip()})
         except Exception as e:
             if attempt == 1:
                 import traceback
-                logging.error(f"Portfolio generation error: {e}\\n{traceback.format_exc()}")
+                logging.error(f"Portfolio generation error: {e}\n{traceback.format_exc()}")
                 return jsonify({"error": f"AI service error: {e}"}), 500
             time.sleep(2)
 
