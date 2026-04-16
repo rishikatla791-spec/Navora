@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NAVORA - AI Career Guidance</title>
     <!-- Tailwind CSS -->
-    <link href="output.css" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- Icons (Lucide) -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- HTML2PDF -->
@@ -30,7 +30,13 @@
         .nav-item.active i { color: white; }
     </style>
 </head>
-<body class="min-h-screen relative overflow-hidden">
+<body class="bg-slate-50 flex h-screen overflow-hidden">
+    <!-- Auth Loading Overlay -->
+    <div id="auth-loading" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-slate-500 font-medium animate-pulse">Verifying Session...</p>
+    </div>
+
     <div class="fixed inset-0 z-0 overflow-hidden pointer-events-none">
         <div class="bg-blob w-[40rem] h-[40rem] bg-indigo-100 top-[-10%] left-[-10%]"></div>
         <div class="bg-blob w-[30rem] h-[30rem] bg-blue-100 bottom-[-20%] right-[-10%]"></div>
@@ -38,7 +44,7 @@
 
     <div class="flex h-screen bg-transparent w-full relative z-10">
         <!-- Sidebar -->
-        <div class="w-64 glass-panel border-r border-slate-200 p-6 flex flex-col justify-between h-full bg-white/60 shrink-0">
+        <aside class="w-72 glass-panel border-r border-slate-200 p-6 flex flex-col justify-between h-full bg-white/60 shrink-0">
             <div>
                 <div class="flex items-center gap-3 mb-10">
                     <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">N</div>
@@ -65,13 +71,12 @@
                     <i data-lucide="log-out" class="w-4 h-4"></i>
                 </button>
             </div>
-        </div>
+        </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 p-8 overflow-y-auto">
-            
+        <main class="flex-1 p-8 overflow-y-auto">
             <!-- Dashboard Tab -->
-            <div id="tab-dashboard" class="tab-content active h-full">
+            <section id="tab-dashboard" class="tab-content active h-full">
                 <header class="mb-10">
                     <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome to your Career Hub</h2>
                     <p class="text-slate-600 text-lg">AI-powered guidance to bridge your skill gaps.</p>
@@ -104,1397 +109,176 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                    <!-- God-Level Pro Ad / Interview Trigger -->
                     <div class="glass-card p-6 rounded-2xl flex flex-col justify-between bg-gradient-to-r from-slate-900 to-indigo-900 border-none relative overflow-hidden group cursor-pointer" onclick="openInterviewModal()">
                         <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-20"></div>
-                        <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-500 rounded-full filter blur-3xl opacity-30 group-hover:opacity-50 transition duration-500"></div>
-                        <div class="relative z-10 flex justify-between items-center h-full">
+                        <div class="relative z-10 flex justify-between items-center h-full text-white">
                             <div>
-                                <p class="text-indigo-200 font-bold mb-1 uppercase tracking-wider text-xs"><i data-lucide="zap" class="w-3 h-3 inline pb-0.5"></i> Premium Feature</p>
-                                <h4 class="text-2xl font-bold text-white mb-2">Live AI Mock Interview</h4>
-                                <p class="text-slate-300 text-sm max-w-sm">Face a brutal Google Recruiter AI via real-time WebSockets to test your technical skills under pressure.</p>
+                                <p class="text-indigo-200 font-bold mb-1 uppercase tracking-wider text-xs">Premium Feature</p>
+                                <h4 class="text-2xl font-bold mb-2">Live AI Mock Interview</h4>
+                                <p class="text-slate-300 text-sm max-w-sm">Test your technical skills with our Senior AI Recruiter.</p>
                             </div>
-                            <button class="px-6 py-3 bg-white text-indigo-900 font-bold rounded-xl shadow-lg hover:scale-105 transition transform flex items-center gap-2">
-                                Start Simulator <i data-lucide="play" class="w-4 h-4"></i>
-                            </button>
+                            <button class="px-6 py-3 bg-white text-indigo-900 font-bold rounded-xl shadow-lg">Start Simulator</button>
                         </div>
                     </div>
                 </div>
 
                 <div class="glass-card p-8 rounded-2xl flex-1 flex flex-col">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i data-lucide="sparkles" class="text-indigo-500"></i> AI Internship Recommendations</h3>
-                        <button onclick="loadRecommendations()" class="px-4 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium">Refresh Match</button>
-                    </div>
+                    <h3 class="text-xl font-bold text-slate-800 mb-6">AI Recommendations</h3>
                     <div id="recommendations-container" class="space-y-4 flex-1">
-                        <p class="text-slate-500">Complete your profile to unlock personalized AI matches.</p>
+                        <p class="text-slate-500">Complete your profile to unlock matches.</p>
                     </div>
                 </div>
-            </div>
+            </section>
 
-            <!-- Internships Tab -->
-            <div id="tab-internships" class="tab-content h-full">
-                <header class="mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Live AICTE Internships</h2>
-                    <p class="text-slate-600 text-lg">Search real opportunities directly from the National Portal.</p>
-                </header>
-
-                <form onsubmit="searchInternships(event)" class="mb-8 relative max-w-2xl shrink-0 flex flex-col gap-4">
-                    <div class="flex gap-4 mb-2">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="search_source" value="global" checked onchange="toggleLocationInput()" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
-                            <span class="text-slate-700 font-medium">Global AI Search</span>
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="search_source" value="aicte" onchange="toggleLocationInput()" class="text-blue-600 focus:ring-blue-500 w-4 h-4">
-                            <span class="text-slate-700 font-medium">AICTE National Portal</span>
-                        </label>
-                    </div>
-                    <div class="relative w-full">
-                        <i data-lucide="search" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="internship-query" placeholder="Eg. Software, Analytics..." class="w-full pl-12 pr-32 py-4 rounded-2xl input-modern text-lg font-medium shadow-sm transition placeholder:text-slate-400">
-                        <button type="submit" id="internship-btn" class="absolute inset-y-2 right-2 px-6 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition">Search</button>
-                    </div>
-                    <div class="relative w-full hidden" id="location-input-container">
-                        <i data-lucide="map-pin" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" id="internship-location" placeholder="Location (e.g. Mumbai)..." class="w-full pl-12 pr-4 py-4 rounded-2xl input-modern text-lg font-medium shadow-sm transition placeholder:text-slate-400">
-                    </div>
+            <!-- Other Tabs (Internships, Trends, etc.) -->
+            <section id="tab-internships" class="tab-content h-full">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">Live Internships</h2>
+                <form onsubmit="searchInternships(event)" class="mb-8 flex gap-4">
+                    <input type="text" id="internship-query" placeholder="Search internships..." class="flex-1 p-4 rounded-xl border border-slate-200 shadow-sm">
+                    <button type="submit" class="px-8 bg-blue-600 text-white font-bold rounded-xl">Search</button>
                 </form>
-
-                <div class="flex-1 overflow-y-auto pb-10" id="internship-results">
-                    <div class="h-64 flex flex-col items-center justify-center text-center p-8 bg-white/50 border border-slate-200 border-dashed rounded-3xl">
-                        <div class="w-16 h-16 bg-blue-50 text-blue-500 rounded-full flex items-center justify-center mb-4"><i data-lucide="compass" class="w-8 h-8"></i></div>
-                        <h3 class="text-xl font-bold text-slate-800">Start your journey</h3>
-                        <p class="text-slate-500 mt-2 max-w-md">Search keywords to pull the latest verified internships.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Trends Tab -->
-            <div id="tab-trends" class="tab-content h-full">
-                <header class="mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">Industry Trends</h2>
-                    <p class="text-slate-600 text-lg">See what skills are growing right now.</p>
-                </header>
-                <div class="glass-card p-8 rounded-2xl flex-1 flex flex-col">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i data-lucide="trending-up" class="text-indigo-500"></i> Market Analysis</h3>
-                        <button onclick="loadTrends()" class="px-4 py-2 text-sm bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium">Analyze Latest Data</button>
-                    </div>
-                    <div id="trends-container" class="grid grid-cols-1 md:grid-cols-2 gap-6 content-start">
-                        <p class="text-slate-500 col-span-2">Click analyze to view live industry trends.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Roadmap Tab -->
-            <div id="tab-roadmap" class="tab-content h-full">
-                <header class="mb-8">
-                    <h2 class="text-3xl font-bold text-slate-800 mb-2">AI Career Roadmap</h2>
-                    <p class="text-slate-600 text-lg">Your personalized step-by-step path to your target role.</p>
-                </header>
-                
-                <form onsubmit="loadRoadmap(event)" class="mb-8 relative max-w-2xl shrink-0">
-                    <i data-lucide="target" class="absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400"></i>
-                    <input type="text" id="roadmap-target" placeholder="Set your target goal (e.g. Data Scientist)" class="w-full pl-12 pr-40 py-4 rounded-2xl input-modern text-lg font-medium shadow-sm transition placeholder:text-slate-400">
-                    <button type="submit" id="roadmap-btn" class="absolute inset-y-2 right-2 px-6 bg-blue-600 text-white font-semibold rounded-xl hover:bg-blue-700 transition">Generate Path</button>
-                </form>
-
-                <div class="glass-card p-8 rounded-2xl flex-1 flex flex-col max-h-[700px]">
-                    <div class="flex justify-between items-center mb-6">
-                        <h3 class="text-xl font-bold text-slate-800 flex items-center gap-2"><i data-lucide="map" class="text-indigo-500"></i> Career Path</h3>
-                    </div>
-                    <div id="roadmap-container" class="space-y-6 flex-1 overflow-y-auto pr-2">
-                        <p class="text-slate-500">Pick a target goal and click generate to view your AI career roadmap.</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Auto-Applier Autopilot Tab -->
-            <div id="tab-autobot" class="tab-content h-full flex flex-col gap-6">
-                <header class="mb-2">
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-lg">
-                            <i data-lucide="bot" class="w-5 h-5 text-white"></i>
-                        </div>
-                        <div>
-                            <h2 class="text-3xl font-bold text-slate-800">Autopilot Auto-Applier</h2>
-                            <p class="text-slate-500 text-sm">Set it and forget it — Navora applies to hundreds of jobs while you sleep.</p>
-                        </div>
-                    </div>
-                </header>
-
-                <!-- Config Card -->
-                <div class="glass-card p-6 rounded-2xl border border-emerald-100 bg-gradient-to-r from-emerald-50/60 to-teal-50/60">
-                    <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2"><i data-lucide="settings" class="w-5 h-5 text-emerald-600"></i> Bot Configuration</h3>
-                    <div class="flex flex-col md:flex-row gap-4 items-end">
-                        <div class="flex-1">
-                            <label class="block text-sm font-medium text-slate-600 mb-1">Target Role</label>
-                            <input type="text" id="bot-target-role" placeholder="e.g. Software Engineer Intern, Data Analyst" class="w-full px-4 py-3 rounded-xl input-modern text-slate-800 font-medium" value="Software Engineer Intern">
-                        </div>
-                        <button id="btn-start-bot" onclick="startAutoBot()" class="group flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-600 text-white font-bold rounded-xl shadow-lg hover:shadow-emerald-200 hover:scale-105 transition-all duration-200 shrink-0">
-                            Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>
-                        </button>
-                    </div>
-                    <div class="flex items-center gap-3 mt-4">
-                        <div class="flex items-center gap-2 text-sm">
-                            <span class="text-slate-500">Bot Status:</span>
-                            <span class="font-bold text-slate-700" id="bot-status">IDLE</span>
-                        </div>
-                        <div id="bot-pulse" class="hidden flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-ping inline-block"></span>
-                            <span class="text-xs text-emerald-600 font-medium">Running in background...</span>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Stats Row -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="glass-card p-4 rounded-2xl text-center">
-                        <p class="text-2xl font-bold text-emerald-600" id="bot-stat-applied">0</p>
-                        <p class="text-xs text-slate-500 mt-1">Applications Sent</p>
-                    </div>
-                    <div class="glass-card p-4 rounded-2xl text-center">
-                        <p class="text-2xl font-bold text-indigo-600" id="bot-stat-jobs">0</p>
-                        <p class="text-xs text-slate-500 mt-1">Jobs Found</p>
-                    </div>
-                    <div class="glass-card p-4 rounded-2xl text-center">
-                        <p class="text-2xl font-bold text-amber-600" id="bot-stat-cv">0</p>
-                        <p class="text-xs text-slate-500 mt-1">Custom CVs Generated</p>
-                    </div>
-                </div>
-
-                <!-- Resizable Split Panel: Terminal + Applications Log -->
-                <div id="split-container" class="flex flex-col flex-1 gap-0 rounded-2xl overflow-hidden border border-slate-200 shadow-xl" style="min-height: 400px;">
-
-                    <!-- Top: Live Terminal -->
-                    <div id="terminal-panel" class="bg-slate-950 flex flex-col overflow-hidden" style="height: 260px; min-height: 80px;">
-                        <div class="flex items-center gap-2 px-4 py-3 border-b border-slate-800 bg-slate-900 shrink-0">
-                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
-                            <span class="ml-3 text-xs text-slate-500 font-mono">navora-autopilot -- bash</span>
-                            <span class="ml-auto text-xs text-emerald-500 font-mono animate-pulse" id="bot-terminal-status">● LIVE</span>
-                        </div>
-                        <div id="bot-terminal" class="flex-1 overflow-y-auto p-5 font-mono text-sm text-emerald-400 leading-relaxed">
-                            <div class="text-slate-600">Navora Autopilot v1.0 — Ready. Enter your target role and click Launch.</div>
-                            <div class="text-slate-700 mt-1">Waiting for instructions...</div>
-                        </div>
-                    </div>
-
-                    <!-- Drag Handle -->
-                    <div id="drag-handle" class="h-2 bg-slate-800 hover:bg-indigo-600 cursor-row-resize flex items-center justify-center shrink-0 group transition-colors duration-150" title="Drag to resize">
-                        <div class="w-10 h-0.5 bg-slate-600 group-hover:bg-white rounded-full transition-colors"></div>
-                    </div>
-
-                    <!-- Bottom: Applications Log -->
-                    <div id="log-panel" class="bg-white flex flex-col overflow-hidden flex-1" style="min-height: 80px;">
-                        <div class="flex items-center justify-between px-6 py-3 border-b border-slate-100 shrink-0">
-                            <h3 class="font-bold text-slate-800 flex items-center gap-2">
-                                <i data-lucide="archive" class="w-5 h-5 text-indigo-500"></i>
-                                Applications Log
-                                <span class="ml-2 text-xs bg-indigo-100 text-indigo-600 px-2 py-0.5 rounded-full font-semibold" id="app-count-badge">0 saved</span>
-                            </h3>
-                            <button onclick="loadApplicationsLog()" class="text-xs text-indigo-500 hover:text-indigo-700 font-medium flex items-center gap-1">
-                                <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Refresh
-                            </button>
-                        </div>
-                        <div id="applications-log" class="flex-1 overflow-y-auto divide-y divide-slate-100">
-                            <div class="p-8 text-center text-slate-400 text-sm">
-                                <i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>
-                                No applications yet. Run the bot to generate cover letters.
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+                <div id="internship-results" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </section>
 
             <!-- Profile Tab -->
-            <div id="tab-profile" class="tab-content h-full">
-                <header class="mb-4 flex justify-between items-start">
-                    <div>
-                        <h2 class="text-3xl font-bold text-slate-800 mb-2">Profile Assistant</h2>
-                        <p class="text-slate-600 text-lg">Chat, upload an old resume, or Sync with GitHub to build your profile.</p>
-                    </div>
-                    <div class="flex flex-col gap-2 items-end">
-                        <button onclick="downloadResume()" id="btn-resume-pdf" class="flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm font-medium w-48">
-                            <i data-lucide="file-down" class="w-5 h-5"></i><span>Get Resume (PDF)</span>
-                        </button>
-                        <button onclick="generatePortfolio()" id="btn-generate-portfolio" class="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-500 text-white rounded-xl hover:from-emerald-400 hover:to-teal-400 transition-all duration-300 shadow-[0_0_15px_rgba(16,185,129,0.4)] hover:shadow-[0_0_25px_rgba(16,185,129,0.6)] font-bold w-48 group border border-emerald-400/30">
-                            <i data-lucide="sparkles" class="w-5 h-5 group-hover:rotate-12 transition text-yellow-200"></i><span>3D Portfolio</span>
-                        </button>
-                        <div class="flex flex-col gap-2 w-48">
-                            <div class="flex items-center gap-1 w-full">
-                                <input type="text" id="github-username" placeholder="GitHub Username" class="flex-1 w-full px-3 py-2 rounded-l-xl input-modern text-sm border-r-0 h-[40px]" onkeypress="if(event.key === 'Enter') syncGithub()">
-                                <button onclick="syncGithub()" id="btn-github-sync" class="h-[40px] px-3 bg-slate-800 text-white rounded-r-xl hover:bg-slate-900 transition flex items-center justify-center shrink-0" title="Sync GitHub">
-                                    <i data-lucide="github" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                            <div class="flex items-center gap-1 w-full">
-                                <input type="text" id="linkedin-url" placeholder="LinkedIn Name/URL" class="flex-1 w-full px-3 py-2 rounded-l-xl input-modern text-sm border-r-0 h-[40px]" onkeypress="if(event.key === 'Enter') syncLinkedin()">
-                                <button onclick="syncLinkedin()" id="btn-linkedin-sync" class="h-[40px] px-3 bg-[#0a66c2] text-white rounded-r-xl hover:bg-blue-800 transition flex items-center justify-center shrink-0" title="Sync LinkedIn">
-                                    <i data-lucide="linkedin" class="w-4 h-4"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </header>
-                
-                <div class="glass-card flex-1 flex flex-col overflow-hidden rounded-2xl relative max-w-3xl border border-slate-200 shadow-sm max-h-[600px] bg-white">
-                    <!-- Chat History -->
-                    <div id="chat-history" class="flex-1 overflow-y-auto p-4 space-y-4 bg-slate-50/50">
-                        <div class="flex gap-3 max-w-[85%]">
-                            <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                                <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i>
-                            </div>
-                            <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-sm shadow-sm">
-                                <p class="text-slate-700 text-sm">Hello! I'm your NAVORA profile assistant. Please type your skills and goals, or click the paperclip icon to upload your resume (PDF or Image).</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- File Preview Area -->
-                    <div id="file-preview" class="hidden px-4 py-2 bg-indigo-50 border-t border-indigo-100 flex items-center gap-2">
-                        <i data-lucide="file" class="w-4 h-4 text-indigo-600"></i>
-                        <span id="file-name" class="text-sm font-medium text-indigo-800 truncate"></span>
-                        <button onclick="removeFile()" class="ml-auto text-indigo-400 hover:text-indigo-600"><i data-lucide="x" class="w-4 h-4"></i></button>
-                    </div>
-
-                    <!-- Chat Input -->
-                    <div class="p-3 bg-white border-t border-slate-200 flex items-end gap-2">
-                        <input type="file" id="file-upload" class="hidden" accept=".pdf,image/*" onchange="handleFileSelect(event)">
-                        <button onclick="document.getElementById('file-upload').click()" class="p-3 text-slate-500 hover:bg-slate-100 hover:text-indigo-600 rounded-xl transition">
-                            <i data-lucide="paperclip" class="w-5 h-5"></i>
-                        </button>
-                        <div class="flex-1 relative">
-                            <textarea id="chat-input" rows="1" class="w-full pl-4 pr-12 py-3 rounded-xl input-modern resize-none min-h-[48px]" placeholder="Type a message..." onkeypress="handleChatEnter(event)"></textarea>
-                        </div>
-                        <button id="send-btn" onclick="sendChatMessage()" class="p-3 bg-indigo-600 text-white rounded-xl hover:bg-indigo-700 transition shadow-sm">
-                            <i data-lucide="send" class="w-5 h-5"></i>
-                        </button>
+            <section id="tab-profile" class="tab-content h-full">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">Profile Assistant</h2>
+                <div class="glass-card p-6 rounded-2xl h-[500px] flex flex-col">
+                    <div id="chat-history" class="flex-1 overflow-y-auto mb-4 p-4 space-y-4"></div>
+                    <div class="flex gap-2">
+                        <input type="text" id="chat-input" class="flex-1 p-4 rounded-xl border border-slate-200" placeholder="Type a message...">
+                        <button onclick="sendChatMessage()" class="px-6 bg-indigo-600 text-white rounded-xl">Send</button>
                     </div>
                 </div>
-            </div>
-            <!-- Removed Portfolio Tab -->
-        </div>
+            </section>
+
+            <!-- Roadmap Tab -->
+            <section id="tab-roadmap" class="tab-content h-full">
+                <h2 class="text-3xl font-bold text-slate-800 mb-6">AI Career Roadmap</h2>
+                <div id="roadmap-container" class="space-y-6"></div>
+            </section>
+        </main>
     </div>
 
-    </div>
-
-    <!-- Hidden Resume Render Container -->
-    <div id="resume-container" style="display: none; width: 800px; padding: 40px; background: white; color: black; font-family: 'Inter', sans-serif;"></div>
-
-    <!-- 3D Portfolio Preview Modal -->
-    <div id="portfolio-modal" class="fixed inset-0 z-50 bg-slate-900/95 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-indigo-950 border border-slate-700 w-full max-w-6xl h-[90vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300 relative" id="portfolio-card">
-            <!-- Header -->
-            <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 rounded-full bg-red-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-amber-500"></div>
-                    <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <h3 class="text-white font-bold text-lg ml-2 border-l border-slate-700 pl-4">Live Project Workspace <span class="text-xs ml-2 bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded-md">ULTRA</span></h3>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div id="portfolio-status" class="text-xs text-slate-400 font-mono mr-4"></div>
-                    <button onclick="downloadPortfolio()" id="btn-download-portfolio" style="display: none;" class="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 text-white border border-slate-700 rounded-xl hover:bg-slate-700 transition text-sm font-bold">
-                        <i data-lucide="download" class="w-4 h-4"></i> Download .HTML
-                    </button>
-                    <button onclick="closePortfolioModal()" class="text-slate-400 hover:text-white transition bg-slate-800 p-2 rounded-full hover:bg-slate-700 ml-2">
-                        <i data-lucide="x" class="w-5 h-5"></i>
-                    </button>
-                </div>
-            </div>
-            <!-- Live Preview -->
-            <div class="flex-1 w-full bg-white relative">
-                <iframe id="portfolio-preview" class="w-full h-full border-0 absolute inset-0" sandbox="allow-scripts allow-same-origin"></iframe>
-                <div id="portfolio-overlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 backdrop-blur-md z-10 transition-opacity duration-300">
-                    <div class="w-20 h-20 bg-emerald-900/30 text-emerald-500 border border-emerald-500/30 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden">
-                        <i data-lucide="code" class="w-10 h-10 animate-pulse relative z-10"></i>
-                        <div class="absolute inset-0 bg-emerald-500/20 blur-xl"></div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white tracking-wide" id="portfolio-overlay-title">Gemini 3.0 Pro is Coding...</h3>
-                    <p class="text-slate-400 mt-2 text-center max-w-md text-sm leading-relaxed" id="portfolio-overlay-desc">Writing HTML, CSS, compiling animations and generating layout rules. This takes ~10 seconds.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- God-Level Interview Modal -->
-    <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-4 hidden opacity-0 transition-opacity duration-300">
-        <div class="bg-slate-900 border border-slate-700 w-full max-w-4xl h-[80vh] rounded-3xl shadow-2xl overflow-hidden flex flex-col transform scale-95 transition-transform duration-300" id="interview-card">
-            
-            <!-- Header -->
-            <div class="px-6 py-4 bg-slate-800/80 border-b border-slate-700 flex justify-between items-center backdrop-blur-md">
-                <div class="flex items-center gap-3">
-                    <div class="w-3 h-3 rounded-full bg-red-500 animate-pulse"></div>
-                    <h3 class="text-white font-bold text-lg">WebSocket Live Video Analysis <span class="text-xs ml-2 bg-indigo-500/20 text-indigo-300 px-2 py-1 rounded-md">Navora Premium</span></h3>
-                </div>
-                <button onclick="closeInterviewModal()" class="text-slate-400 hover:text-white transition bg-slate-800 p-2 rounded-full hover:bg-slate-700">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <!-- Video Feeds & Chat Area -->
-            <div class="flex-1 p-6 flex gap-6 overflow-hidden">
-                <!-- Interviewer Video Box -->
-                <div class="w-1/3 flex flex-col gap-4">
-                    <div class="relative w-full aspect-[4/5] bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden shadow-inner flex flex-col items-center justify-center">
-                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent z-10"></div>
-                        <div class="w-32 h-32 rounded-full bg-indigo-900 border-4 border-indigo-500/30 flex items-center justify-center z-20 mb-4 overflow-hidden relative shadow-[0_0_30px_rgba(99,102,241,0.3)]">
-                            <i data-lucide="bot" class="w-16 h-16 text-indigo-300"></i>
-                        </div>
-                        <h4 class="text-indigo-100 font-bold z-20 text-lg">Senior AI Recruiter</h4>
-                        <p class="text-slate-400 text-sm z-20">Google Cloud Platform</p>
-                        
-                        <!-- Real-time Voice Visualizer Simulation -->
-                        <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex items-end gap-1 z-20 h-6">
-                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_1s_infinite] h-2"></div>
-                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_0.8s_infinite] h-4"></div>
-                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_1.2s_infinite] h-6" id="audio-bar"></div>
-                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_0.9s_infinite] h-3"></div>
-                            <div class="w-1 bg-indigo-400 rounded-full animate-[bounce_1.1s_infinite] h-5"></div>
-                        </div>
-                    </div>
-                    
-                    <div class="bg-slate-800 rounded-xl p-4 border border-slate-700 flex-1 flex flex-col gap-2">
-                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold">Candidate Feed</p>
-                        <div class="w-full bg-slate-900 rounded-lg overflow-hidden border border-slate-700 relative h-28">
-                            <video id="webcam-feed" autoplay muted playsinline class="w-full h-full object-cover opacity-80 transform -scale-x-100"></video>
-                            <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-slate-900/90 to-transparent p-2 text-[10px] text-slate-300 flex justify-between">
-                                <span class="tracking-widest font-mono">REC</span>
-                                <span class="text-red-400 animate-pulse">●</span>
-                            </div>
-                        </div>
-                        <p class="text-xs text-slate-400 uppercase tracking-widest font-bold mt-2">Live Metrics</p>
-                        <div class="space-y-3">
-                            <div>
-                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">Eye Contact</span><span class="text-emerald-400" id="metric-eye">92%</span></div>
-                                <div class="w-full bg-slate-900 rounded-full h-1.5"><div class="bg-emerald-500 h-1.5 rounded-full transition-all duration-300" id="metric-eye-bar" style="width: 92%"></div></div>
-                            </div>
-                            <div>
-                                <div class="flex justify-between text-xs mb-1"><span class="text-slate-300">Confidence Tone</span><span class="text-amber-400" id="metric-conf">85%</span></div>
-                                <div class="w-full bg-slate-900 rounded-full h-1.5"><div class="bg-amber-500 h-1.5 rounded-full transition-all duration-300" id="metric-conf-bar" style="width: 85%"></div></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Chat Transcript Area -->
-                <div class="flex-1 bg-slate-800 rounded-2xl border border-slate-700 flex flex-col relative overflow-hidden">
-                    <div id="interview-transcript" class="flex-1 overflow-y-auto p-6 space-y-6 scroll-smooth">
-                        <div class="text-center text-slate-500 text-sm py-4 border-b border-slate-700/50">End-to-end WebSocket connection established. Commencing technical screening.</div>
-                    </div>
-                    
-                    <!-- Input Area -->
-                    <div class="p-4 bg-slate-850 border-t border-slate-700 pt-0">
-                        <div class="text-slate-400 text-xs mb-2 ml-2 italic" id="interview-status">Connecting to Recruiter AI... slowly booting...</div>
-                        <div class="relative">
-                            <input type="text" id="interview-input" disabled class="w-full bg-slate-900 border border-slate-600 rounded-xl py-4 pl-4 pr-24 text-slate-200 placeholder:text-slate-500 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition" placeholder="Awaiting recruiter opening statement..." onkeypress="if(event.key === 'Enter') sendInterviewMessage()">
-                            <button onclick="toggleVoiceInput()" id="btn-interview-mic" disabled class="absolute right-14 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-slate-700 rounded-lg flex items-center justify-center text-slate-300 hover:text-white hover:bg-slate-600 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-inner z-10 group">
-                                <span class="absolute -top-8 bg-slate-800 text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition">Voice</span>
-                                <i data-lucide="mic" class="w-4 h-4" id="mic-icon"></i>
-                            </button>
-                            <button onclick="sendInterviewMessage()" id="btn-interview-send" disabled class="absolute right-2 top-1/2 transform -translate-y-1/2 w-10 h-10 bg-indigo-600 rounded-lg flex items-center justify-center text-white hover:bg-indigo-500 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(79,70,229,0.5)] z-10">
-                                <i data-lucide="send" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
+    <!-- Modals & Overlays -->
+    <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-4">
+        <div class="bg-white rounded-3xl w-full max-w-4xl h-[80vh] flex flex-col overflow-hidden">
+            <header class="p-6 border-b flex justify-between items-center">
+                <h3 class="font-bold text-xl">AI Interview Simulator</h3>
+                <button onclick="closeInterviewModal()" class="text-slate-400">✕</button>
+            </header>
+            <div id="interview-transcript" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
+            <div class="p-6 border-t flex gap-2">
+                <input type="text" id="interview-input" class="flex-1 p-4 rounded-xl border" placeholder="Your answer...">
+                <button onclick="sendInterviewMessage()" class="px-8 bg-indigo-600 text-white rounded-xl">Send</button>
             </div>
         </div>
     </div>
 
     <script>
-        lucide.createIcons();
+        const RENDER_URL = "https://navora.onrender.com";
+        let chatHistory = [];
+        let socket = io(RENDER_URL);
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-            
-            document.getElementById(`tab-${tabId}`).classList.add('active`);
-            document.getElementById(`nav-${tabId}`).classList.add('active`);
-            lucide.createIcons();
-            
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`nav-${tabId}`).classList.add('active');
             if(tabId === 'dashboard') loadProfile();
-            if(tabId === 'autobot') loadApplicationsLog();
         }
-
-        // --- Resizable Split Panel (Terminal / Applications Log) ---
-        (function() {
-            const handle = document.getElementById('drag-handle`);
-            const termPanel = document.getElementById('terminal-panel`);
-            const container = document.getElementById('split-container`);
-            let dragging = false, startY = 0, startH = 0;
-
-            if (!handle) return;
-
-            handle.addEventListener('mousedown', (e) => {
-                dragging = true;
-                startY = e.clientY;
-                startH = termPanel.offsetHeight;
-                document.body.style.cursor = 'row-resize';
-                document.body.style.userSelect = 'none';
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!dragging) return;
-                const delta = e.clientY - startY;
-                const containerH = container.offsetHeight;
-                const newH = Math.min(Math.max(startH + delta, 80), containerH - 80 - 8);
-                termPanel.style.height = newH + 'px';
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (!dragging) return;
-                dragging = false;
-                document.body.style.cursor = '';
-                document.body.style.userSelect = '';
-            });
-        })();
 
         async function loadProfile() {
             try {
                 const res = await fetch(`${RENDER_URL}/api/profile`);
                 const data = await res.json();
                 document.getElementById('dash-completeness').innerText = (data.completeness || 0) + '%';
-                const role = data.target_role || 'Not set';
-                const roleEl = document.getElementById('dash-role`);
-                roleEl.innerText = role;
-                roleEl.title = role;
+                document.getElementById('dash-role').innerText = data.target_role || 'Not set';
                 document.getElementById('dash-skills-count').innerText = (data.skills || []).length;
                 document.getElementById('sidebar-user-name').innerText = data.name || 'Guest User';
-                document.getElementById('sidebar-user-initial').innerText = (data.name || 'U').charAt(0).toUpperCase();
-
-                // Pre-fill roadmap input with target role if available and not 'None'
-                if (role && role !== 'None' && role !== 'Not set') {
-                    document.getElementById('roadmap-target').value = role;
-                }
             } catch (e) { console.error(e); }
         }
 
-        let chatHistory = [];
-        let currentFile = null;
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if(file) {
-                currentFile = file;
-                document.getElementById('file-preview').classList.remove('hidden`);
-                document.getElementById('file-name').innerText = file.name;
-            }
-        }
-
-        function removeFile() {
-            currentFile = null;
-            document.getElementById('file-upload').value = '';
-            document.getElementById('file-preview').classList.add('hidden`);
-        }
-
-        function handleChatEnter(e) {
-            if(e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendChatMessage();
-            }
-        }
-
-        function appendMessage(role, text) {
-            const chatContainer = document.getElementById('chat-history`);
-            const msgDiv = document.createElement('div`);
-            
-            if(role === 'user') {
-                msgDiv.className = 'flex gap-3 max-w-[85%] ml-auto justify-end';
-                msgDiv.innerHTML = `
-                    <div class="bg-indigo-600 text-white p-3 rounded-2xl rounded-tr-sm shadow-sm">
-                        <p class="text-sm whitespace-pre-wrap">${text}</p>
-                    </div>
-                    <div class="w-8 h-8 rounded-full bg-slate-200 flex items-center justify-center shrink-0">
-                        <span class="text-xs font-bold text-slate-600">U</span>
-                    </div>
-                `;
-            } else {
-                msgDiv.className = 'flex gap-3 max-w-[85%]';
-                msgDiv.innerHTML = `
-                    <div class="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center shrink-0">
-                        <i data-lucide="sparkles" class="w-4 h-4 text-indigo-600"></i>
-                    </div>
-                    <div class="bg-white border border-slate-200 p-3 rounded-2xl rounded-tl-sm shadow-sm">
-                        <p class="text-slate-700 text-sm whitespace-pre-wrap">${text}</p>
-                    </div>
-                `;
-            }
-            chatContainer.appendChild(msgDiv);
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-            lucide.createIcons();
-        }
-
         async function sendChatMessage() {
-            const input = document.getElementById('chat-input`);
+            const input = document.getElementById('chat-input');
             const text = input.value.trim();
-            if(!text && !currentFile) return;
-
-            let fileData = null;
-            let fileMime = null;
-            let fileStr = '';
-            
-            if(currentFile) {
-                fileMime = currentFile.type;
-                fileStr = `[Attached File: ${currentFile.name}]\n`;
-                await new Promise((resolve) => {
-                    const reader = new FileReader();
-                    reader.onload = (e) => {
-                        fileData = e.target.result.split(',')[1];
-                        resolve();
-                    }
-                    reader.readAsDataURL(currentFile);
-                });
-            }
-
-            const displayText = fileStr + text;
-            appendMessage('user', displayText);
-            
+            if(!text) return;
             input.value = '';
-            removeFile();
-            
-            const payloadHistory = [...chatHistory];
-            chatHistory.push({role: 'user', text: displayText});
-            
-            const btn = document.getElementById('send-btn`);
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i>';
-            btn.disabled = true;
-
             try {
-                const res = await fetch(`${RENDER_URL}/api/profile/chat', {
+                const res = await fetch(`${RENDER_URL}/api/profile/chat`, {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({
-                        text: text,
-                        file_data: fileData,
-                        file_mime: fileMime,
-                        history: payloadHistory
-                    })
+                    body: JSON.stringify({ text, history: chatHistory })
                 });
                 const data = await res.json();
-                
-                if(data.status === 'success') {
-                    appendMessage('assistant', data.reply);
-                    chatHistory.push({role: 'model', text: data.reply});
-                    loadProfile(); 
-                } else {
-                    appendMessage('assistant', 'Error: ' + (data.error || 'Unknown error'));
-                }
-            } catch(e) {
-                appendMessage('assistant', 'Sorry, a network error occurred.`);
-            } finally {
-                btn.innerHTML = '<i data-lucide="send" class="w-5 h-5"></i>';
-                btn.disabled = false;
-                lucide.createIcons();
-            }
+                chatHistory.push({role: 'user', text: text}, {role: 'model', text: data.reply});
+                renderChat();
+                loadProfile();
+            } catch(e) { console.error(e); }
         }
 
-        function toggleLocationInput() {
-            const source = document.querySelector('input[name="search_source"]:checked').value;
-            const locContainer = document.getElementById('location-input-container`);
-            if (source === 'aicte') {
-                locContainer.classList.remove('hidden`);
-            } else {
-                locContainer.classList.add('hidden`);
-            }
+        function renderChat() {
+            const container = document.getElementById('chat-history');
+            container.innerHTML = chatHistory.map(msg => `
+                <div class="p-3 rounded-xl ${msg.role === 'user' ? 'bg-indigo-600 text-white ml-auto' : 'bg-slate-100 text-slate-800 mr-auto'} max-w-[80%]">
+                    ${msg.text}
+                </div>
+            `).join('');
+            container.scrollTop = container.scrollHeight;
         }
 
         async function searchInternships(e) {
             e.preventDefault();
             const query = document.getElementById('internship-query').value;
-            if(!query) return;
-            
-            const source = document.querySelector('input[name="search_source"]:checked').value;
-            const location = document.getElementById('internship-location')?.value || '';
-            
-            const btn = document.getElementById('internship-btn`);
-            const resultsDiv = document.getElementById('internship-results`);
-            
-            btn.innerHTML = 'Searching...'; btn.disabled = true;
-            resultsDiv.innerHTML = `<div class="p-8 text-center text-slate-500">Searching ${source.toUpperCase()} data...</div>`;
-            
+            const container = document.getElementById('internship-results');
+            container.innerHTML = '<p class="col-span-2 text-center py-10">Searching...</p>';
             try {
-                const res = await fetch(`/api/internships/search?query=${encodeURIComponent(query)}&source=${source}&location=${encodeURIComponent(location)}`);
+                const res = await fetch(`${RENDER_URL}/api/internships/search?query=${encodeURIComponent(query)}&source=global`);
                 const data = await res.json();
-                if(data.results?.length) {
-                    resultsDiv.innerHTML = `<div class="grid grid-cols-1 md:grid-cols-2 gap-6">` + 
-                        data.results.map(job => {
-                            let detailsHtml = '';
-                            if (job.source === 'AICTE') {
-                                detailsHtml = `<div class="flex items-start gap-2"><i data-lucide="file-text" class="w-4 h-4 mt-1 shrink-0 text-amber-500"></i> <span class="break-words">${job.attributes}</span></div>`;
-                            } else {
-                                detailsHtml = `
-                                    <div class="flex items-center gap-2"><i data-lucide="map-pin" class="w-4 h-4"></i> ${job.location || 'Remote/TBD'}</div>
-                                    ${job.stipend ? `<div class="flex items-center gap-2"><i data-lucide="banknote" class="w-4 h-4 text-emerald-500"></i> ${job.stipend}</div>` : ''}
-                                `;
-                            }
-                            
-                            return `
-                                <div class="glass-card p-6 rounded-2xl flex flex-col justify-between h-full">
-                                    <div>
-                                        <div class="flex justify-between items-start mb-2 gap-2">
-                                            <h3 class="text-xl font-bold text-slate-800">${job.title}</h3>
-                                            ${job.source === 'AICTE' ? '<span class="px-2 py-1 bg-amber-50 text-amber-700 text-xs font-bold rounded-md whitespace-nowrap">AICTE</span>' : ''}
-                                        </div>
-                                        <p class="text-slate-600 font-medium mb-3">${job.company}</p>
-                                        <div class="space-y-2 mb-6 text-sm text-slate-500">
-                                            ${detailsHtml}
-                                        </div>
-                                    </div>
-                                    <a href="${job.link}" target="_blank" class="w-full py-3 bg-slate-50 text-center font-semibold rounded-xl border hover:bg-blue-50 transition block">Apply Now</a>
-                                </div>
-                            `;
-                        }).join('') + `</div>`;
-                    lucide.createIcons();
-                } else {
-                    resultsDiv.innerHTML = `<div class="p-8 text-center text-slate-500">No results found for "${query}" from ${source.toUpperCase()}</div>`;
-                }
-            } catch (e) {
-                resultsDiv.innerHTML = `<div class="p-8 text-center text-red-500">Error fetching internships</div>`;
-            } finally {
-                btn.innerHTML = 'Search'; btn.disabled = false;
-            }
-        }
-
-        async function loadRecommendations() {
-            const container = document.getElementById('recommendations-container`);
-            container.innerHTML = '<div class="text-slate-500 animate-pulse">Generating AI recommendations...</div>';
-            try {
-                const res = await fetch(`${RENDER_URL}/api/recommendations`);
-                const data = res.ok ? await res.json() : await res.json().then(x => {throw new Error(x.error)});
-                
-                const gap = data.skill_gap || {};
-                const interns = data.internships || [];
-                
-                let html = `
-                    <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-4">
-                        <h4 class="font-bold text-blue-900 mb-1">Skill Gap Analysis (${gap.match_percentage}% match for ${gap.target_role})</h4>
-                        <p class="text-sm text-blue-800 mt-2"><b>Missing Skills:</b> ${gap.missing_skills?.join(', ') || 'None'}</p>
+                container.innerHTML = data.results.map(job => `
+                    <div class="glass-card p-6 rounded-2xl">
+                        <h4 class="font-bold text-lg">${job.title}</h4>
+                        <p class="text-slate-600 mb-4">${job.company}</p>
+                        <a href="${job.link}" target="_blank" class="text-blue-600 font-bold">Apply Now →</a>
                     </div>
-                `;
-                html += `<div class="space-y-3 overflow-y-auto">` + interns.map(i => `
-                    <div class="border border-slate-200 p-4 rounded-xl flex justify-between items-center bg-white hover:border-slate-300 transition">
-                        <div>
-                            <h5 class="font-bold text-slate-800">${i.role}</h5>
-                            <p class="text-sm text-slate-500">${i.company} • Match Score: ${i.match_score}%</p>
-                        </div>
-                        <span class="px-3 py-1 bg-green-50 text-green-700 text-xs font-bold rounded-full">Recommended</span>
-                    </div>
-                `).join('') + `</div>`;
-                container.innerHTML = html;
-            } catch (e) {
-                container.innerHTML = `<div class="text-amber-600 bg-amber-50 p-4 rounded-lg">${e.message || 'Error loading recommendations'}</div>`;
-            }
+                `).join('');
+            } catch(e) { container.innerHTML = '<p class="text-red-500">Search failed.</p>'; }
         }
-
-        async function syncGithub() {
-            const username = document.getElementById('github-username').value.trim();
-            if (!username) return alert("Please enter a GitHub username");
-            
-            const btn = document.getElementById('btn-github-sync`);
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
-            btn.disabled = true;
-            lucide.createIcons();
-            
-            appendMessage('user', `Please scan my GitHub profile: ${username}`);
-            
-            try {
-                const res = await fetch(`${RENDER_URL}/api/profile/github', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({username})
-                });
-                const data = await res.json();
-                
-                if (data.status === 'success') {
-                    appendMessage('assistant', `I've successfully scanned your GitHub! Based on your public repositories, I've added several verified skills to your profile.\n\nSummary: ${data.summary}`);
-                    chatHistory.push({role: 'model', text: `GitHub Sync Success: ${data.summary}`});
-                    loadProfile();
-                } else {
-                    appendMessage('assistant', `Error syncing GitHub: ${data.error}`);
-                }
-            } catch (e) {
-                appendMessage('assistant', 'Network error during GitHub sync.`);
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                document.getElementById('github-username').value = '';
-                lucide.createIcons();
-            }
-        }
-
-        async function syncLinkedin() {
-            const urlRaw = document.getElementById('linkedin-url').value.trim();
-            if (!urlRaw) return alert("Please enter a LinkedIn URL or Username");
-            
-            const btn = document.getElementById('btn-linkedin-sync`);
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-4 h-4 animate-spin"></i>';
-            btn.disabled = true;
-            lucide.createIcons();
-            
-            appendMessage('user', `Please scan my LinkedIn profile: ${urlRaw}`);
-            
-            try {
-                const res = await fetch(`${RENDER_URL}/api/profile/linkedin', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({linkedin_url: urlRaw})
-                });
-                const data = await res.json();
-                
-                if (data.status === 'success') {
-                    appendMessage('assistant', `I've successfully scanned your LinkedIn! I used our God-Level Tavily Scraper to parse your professional background.\n\nSummary: ${data.summary}`);
-                    chatHistory.push({role: 'model', text: `LinkedIn Sync Success: ${data.summary}`});
-                    loadProfile();
-                } else {
-                    appendMessage('assistant', `Error syncing LinkedIn: ${data.error}`);
-                }
-            } catch (e) {
-                appendMessage('assistant', 'Network error during LinkedIn sync.`);
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                document.getElementById('linkedin-url').value = '';
-                lucide.createIcons();
-            }
-        }
-
-        async function startAutoBot() {
-            const role = document.getElementById('bot-target-role').value.trim();
-            if(!role) return alert("Please specify the exact role you want the bot to mass-apply for.");
-            
-            const btn = document.getElementById('btn-start-bot`);
-            btn.innerHTML = 'Connecting to Cloud...';
-            btn.disabled = true;
-            
-            document.getElementById('bot-terminal').innerHTML = '<div class="text-slate-600">Booting Navora Autopilot script...</div>';
-            document.getElementById('bot-status').innerText = 'STARTING';
-            document.getElementById('bot-pulse').classList.remove('hidden`);
-            
-            try {
-                const res = await fetch(`${RENDER_URL}/api/bot/auto-apply', {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({target_role: role})
-                });
-                const data = await res.json();
-                if(data.error) throw new Error(data.error);
-                
-                btn.innerHTML = 'Bot Running in Background <i data-lucide="cog" class="w-5 h-5 animate-spin"></i>';
-                lucide.createIcons();
-            } catch (e) {
-                alert(e.message);
-                btn.disabled = false;
-                btn.innerHTML = 'Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>';
-                lucide.createIcons();
-            }
-        }
-
-        async function loadApplicationsLog() {
-            const container = document.getElementById('applications-log`);
-            const badge = document.getElementById('app-count-badge`);
-            container.innerHTML = '<div class="p-6 text-center text-slate-400 text-sm animate-pulse">Loading applications...</div>';
-
-            try {
-                const res = await fetch(`${RENDER_URL}/api/applications`);
-                const apps = await res.json();
-
-                if (!apps.length) {
-                    container.innerHTML = `<div class="p-8 text-center text-slate-400 text-sm"><i data-lucide="inbox" class="w-8 h-8 mx-auto mb-2 text-slate-300"></i>No applications yet. Run the bot to generate cover letters.</div>`;
-                    badge.innerText = '0 saved';
-                    lucide.createIcons();
-                    return;
-                }
-
-                badge.innerText = `${apps.length} saved`;
-                const statusColors = { 'Generated': 'bg-blue-100 text-blue-700', 'Applied': 'bg-emerald-100 text-emerald-700', 'Rejected': 'bg-red-100 text-red-700' };
-
-                container.innerHTML = apps.map(app => `
-                    <div class="p-5 hover:bg-slate-50 transition" id="app-row-${app.id}">
-                        <div class="flex items-start justify-between gap-4">
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 mb-1 flex-wrap">
-                                    <h4 class="font-bold text-slate-800 text-base">${app.company}</h4>
-                                    <span class="text-xs px-2 py-0.5 rounded-full font-semibold ${statusColors[app.status] || 'bg-gray-100 text-gray-600'}">${app.status}</span>
-                                </div>
-                                <p class="text-xs text-slate-500 mb-2">🎯 ${app.role} &nbsp;•&nbsp; 🕐 ${app.created_at}</p>
-                                <div class="bg-slate-50 border border-slate-200 rounded-xl p-3 text-sm text-slate-700 leading-relaxed italic mb-3 max-h-20 overflow-hidden transition-all" id="cl-${app.id}">
-                                    "${app.cover_letter}"
-                                </div>
-                                <div class="flex gap-2 flex-wrap">
-                                    <button onclick="copyToClipboard(event, \`${app.cover_letter.replace(/`/g, '\\`').replace(/\${/g, '\\${')}\`)" class="text-xs px-3 py-1.5 bg-indigo-50 text-indigo-600 rounded-lg hover:bg-indigo-100 font-medium flex items-center gap-1 transition">
-                                        <i data-lucide="copy" class="w-3 h-3"></i> Copy Letter
-                                    </button>
-                                    ${app.job_url ? `<a href="${app.job_url}" target="_blank" class="text-xs px-3 py-1.5 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 font-medium flex items-center gap-1 transition"><i data-lucide="external-link" class="w-3 h-3"></i> View Job</a>` : ''}
-                                    ${app.status !== 'Applied' ? `<button onclick="markAppStatus(${app.id}, 'Applied')" class="text-xs px-3 py-1.5 bg-teal-50 text-teal-600 rounded-lg hover:bg-teal-100 font-medium flex items-center gap-1 transition"><i data-lucide="check" class="w-3 h-3"></i> Mark Applied</button>` : ''}
-                                    <button onclick="deleteApplication(${app.id})" class="text-xs px-3 py-1.5 bg-red-50 text-red-500 rounded-lg hover:bg-red-100 font-medium flex items-center gap-1 transition ml-auto">
-                                        <i data-lucide="trash-2" class="w-3 h-3"></i> Delete
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `).join(`);
-                lucide.createIcons();
-
-            } catch(e) {
-                container.innerHTML = `<div class="p-6 text-red-500 text-sm">Error loading applications: ${e.message}</div>`;
-            }
-        }
-
-        async function copyToClipboard(e, text) {
-            const btn = e.currentTarget;
-            const originalHtml = btn.innerHTML;
-            
-            try {
-                if (navigator.clipboard && window.isSecureContext) {
-                    await navigator.clipboard.writeText(text);
-                } else {
-                    // Fallback for non-https or older browsers
-                    const textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    textArea.style.position = "fixed";
-                    textArea.style.left = "-999999px";
-                    textArea.style.top = "-999999px";
-                    document.body.appendChild(textArea);
-                    textArea.focus();
-                    textArea.select();
-                    document.execCommand('copy`);
-                    textArea.remove();
-                }
-                
-                btn.innerHTML = '<i data-lucide="check" class="w-3 h-3"></i> Copied!';
-                lucide.createIcons();
-                btn.classList.add('bg-emerald-50', 'text-emerald-600`);
-                
-                setTimeout(() => { 
-                    btn.innerHTML = originalHtml; 
-                    btn.classList.remove('bg-emerald-50', 'text-emerald-600`);
-                    lucide.createIcons(); 
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy: ', err);
-                alert('Could not copy text. Please select and copy manually.`);
-            }
-        }
-
-        async function markAppStatus(id, status) {
-            await fetch(`/api/applications/${id}/status`, {
-                method: 'PATCH',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({status})
-            });
-            loadApplicationsLog();
-        }
-
-        async function deleteApplication(id) {
-            if(!confirm('Delete this application from your log?')) return;
-            await fetch(`/api/applications/${id}`, { method: 'DELETE' });
-            document.getElementById(`app-row-${id}`).remove();
-            const badge = document.getElementById('app-count-badge`);
-            const current = parseInt(badge.innerText) || 1;
-            badge.innerText = `${Math.max(0, current - 1)} saved`;
-        }
-
-        async function loadTrends() {
-            const container = document.getElementById('trends-container`);
-            container.innerHTML = '<div class="text-slate-500 col-span-2 text-center py-8">Analyzing live trends...</div>';
-            try {
-                const res = await fetch(`${RENDER_URL}/api/trends`);
-                const data = await res.json();
-                if(data.trending?.length) {
-                    container.innerHTML = data.trending.map(t => `
-                        <div class="glass-card p-6 rounded-2xl border-l-4 border-l-blue-500 shadow-sm">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-lg font-bold text-slate-800">${t.skill}</h3>
-                                <span class="px-2 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-md">${t.growth} Growth</span>
-                            </div>
-                            <p class="text-sm ${t.user_has ? 'text-green-600' : 'text-slate-500'}">${t.user_has ? '✓ You have this skill' : '○ Recommended to learn'}</p>
-                        </div>
-                    `).join(`);
-                } else {
-                    container.innerHTML = '<div class="text-slate-500 col-span-2">No trend data available</div>';
-                }
-            } catch (e) {
-                container.innerHTML = '<div class="text-red-500 col-span-2">Error loading trends</div>';
-            }
-        }
-
-        async function loadRoadmap(e) {
-            if (e) e.preventDefault();
-            
-            const targetInput = document.getElementById('roadmap-target').value.trim();
-            const btn = document.getElementById('roadmap-btn`);
-            const container = document.getElementById('roadmap-container`);
-            
-            btn.innerHTML = 'Generating...'; btn.disabled = true;
-            container.innerHTML = '<div class="text-slate-500 animate-pulse text-center py-8">Generating your personal AI roadmap...</div>';
-            
-            try {
-                const url = targetInput 
-                    ? `/api/roadmap?target=${encodeURIComponent(targetInput)}`
-                    : '/api/roadmap';
-                    
-                const res = await fetch(url);
-                const data = res.ok ? await res.json() : await res.json().then(x => {throw new Error(x.error)});
-                
-                if (data.roadmap && data.roadmap.length > 0) {
-                    let html = '<div class="relative border-l-2 border-indigo-200 ml-4 space-y-8 pb-4">';
-                    data.roadmap.forEach((step, index) => {
-                        html += `
-                            <div class="relative pl-6">
-                                <div class="absolute w-4 h-4 bg-indigo-500 rounded-full -left-[9px] top-1 border-4 border-white shadow-sm"></div>
-                                <div class="glass-card p-5 rounded-2xl">
-                                    <div class="flex justify-between items-start mb-2">
-                                        <h4 class="text-lg font-bold text-slate-800">Step ${step.step || index+1}: ${step.title}</h4>
-                                        <span class="px-3 py-1 bg-indigo-50 text-indigo-700 text-xs font-bold rounded-lg">${step.duration}</span>
-                                    </div>
-                                    <p class="text-slate-600 text-sm leading-relaxed">${step.description}</p>
-                                </div>
-                            </div>
-                        `;
-                    });
-                    html += '</div>';
-                    container.innerHTML = html;
-                } else {
-                    container.innerHTML = '<div class="text-amber-600 bg-amber-50 p-4 rounded-lg">Roadmap generation failed. Please try again later.</div>';
-                }
-            } catch (error) {
-                container.innerHTML = `<div class="text-red-500 p-4 bg-red-50 rounded-lg">${error.message || 'Make sure you have set a target role and skills in your profile first!'}</div>`;
-            } finally {
-                if (btn) {
-                    btn.innerHTML = 'Generate Path';
-                    btn.disabled = false;
-                }
-            }
-        }
-
-        async function downloadResume() {
-            const btn = document.getElementById('btn-resume-pdf`);
-            const originalHtml = btn.innerHTML;
-            btn.innerHTML = '<div class="flex items-center gap-2"><i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>Drafting...</span></div>';
-            btn.disabled = true;
-            lucide.createIcons();
-
-            try {
-                const res = await fetch(`${RENDER_URL}/api/resume/generate`);
-                const data = await res.json();
-                
-                if (data.status === 'success') {
-                    const container = document.getElementById('resume-container`);
-                    container.innerHTML = data.html;
-                    container.style.display = 'block'; // make it renderable for html2pdf
-                    
-                    const opt = {
-                        margin: 0.5,
-                        filename: 'NAVORA_Professional_Resume.pdf',
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
-                    };
-
-                    await html2pdf().set(opt).from(container).save();
-                    container.style.display = 'none'; // re-hide
-                } else {
-                    alert(data.error || 'Failed to generate resume`);
-                }
-            } catch (error) {
-                alert('Network error while generating resume.`);
-                console.error(error);
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                lucide.createIcons();
-            }
-        }
-
-        let generatedPortfolioCode = "";
-
-        function openPortfolioModal() {
-            const modal = document.getElementById('portfolio-modal`);
-            const card = document.getElementById('portfolio-card`);
-            modal.classList.remove('hidden`);
-            setTimeout(() => {
-                modal.classList.remove('opacity-0`);
-                card.classList.remove('scale-95`);
-            }, 10);
-        }
-
-        function closePortfolioModal() {
-            const modal = document.getElementById('portfolio-modal`);
-            const card = document.getElementById('portfolio-card`);
-            modal.classList.add('opacity-0`);
-            card.classList.add('scale-95`);
-            setTimeout(() => modal.classList.add('hidden'), 300);
-        }
-
-        async function generatePortfolio() {
-            const btn = document.getElementById('btn-generate-portfolio`);
-            const originalHtml = btn.innerHTML;
-            const overlay = document.getElementById('portfolio-overlay`);
-            const status = document.getElementById('portfolio-status`);
-            const btnDownload = document.getElementById('btn-download-portfolio`);
-            
-            btn.innerHTML = '<i data-lucide="loader-2" class="w-5 h-5 animate-spin"></i><span>...</span>';
-            btn.disabled = true;
-            lucide.createIcons();
-            
-            // Open modal to show loading state
-            openPortfolioModal();
-            btnDownload.style.display = 'none';
-            document.getElementById('portfolio-preview').srcdoc = ''; // Clear previous
-            
-            overlay.innerHTML = `
-                <div class="flex flex-col items-center justify-center bg-slate-900/90 w-full h-full backdrop-blur-md">
-                    <div class="w-20 h-20 bg-emerald-900/30 text-emerald-500 border border-emerald-500/30 rounded-full flex items-center justify-center mb-6 shadow-inner relative overflow-hidden">
-                        <i data-lucide="code" class="w-10 h-10 animate-pulse relative z-10"></i>
-                        <div class="absolute inset-0 bg-emerald-500/20 blur-xl"></div>
-                    </div>
-                    <h3 class="text-2xl font-bold text-white tracking-wide">Gemini 3.0 Pro is Coding...</h3>
-                    <p class="text-slate-400 mt-2 text-center max-w-md text-sm leading-relaxed">Writing HTML, CSS, compiling animations and generating layout rules. This takes ~10 seconds.</p>
-                </div>
-            `;
-            lucide.createIcons();
-            overlay.style.opacity = '1';
-            overlay.classList.remove('hidden`);
-            status.innerText = 'Compiling DOM...';
-
-            try {
-                const res = await fetch(`${RENDER_URL}/api/portfolio/generate`);
-                const data = await res.json();
-                
-                if (data.status === 'success') {
-                    generatedPortfolioCode = data.html;
-                    
-                    // Inject into iframe
-                    const iframe = document.getElementById('portfolio-preview`);
-                    const iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
-                    iframeDoc.open();
-                    iframeDoc.write(generatedPortfolioCode);
-                    iframeDoc.close();
-                    
-                    // Show download button
-                    document.getElementById('btn-download-portfolio').style.display = 'flex';
-                    
-                    // Hide overlay
-                    overlay.style.opacity = '0';
-                    setTimeout(() => overlay.classList.add('hidden'), 300);
-                    status.innerText = 'Deployed to Local Preview';
-                } else {
-                    alert(data.error || 'Failed to generate portfolio`);
-                    overlay.innerHTML = `<h3 class="text-red-500 font-bold">Error generating code.</h3><p class="text-slate-500 mt-2">${data.error}</p>`;
-                }
-            } catch (error) {
-                alert('Network error while generating portfolio.`);
-                console.error(error);
-                overlay.innerHTML = `<h3 class="text-red-500 font-bold">Network Error.</h3>`;
-            } finally {
-                btn.innerHTML = originalHtml;
-                btn.disabled = false;
-                lucide.createIcons();
-            }
-        }
-
-        function downloadPortfolio() {
-            if (!generatedPortfolioCode) return alert("Nothing to download yet!");
-            const blob = new Blob([generatedPortfolioCode], { type: 'text/html' });
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a`);
-            a.style.display = 'none';
-            a.href = url;
-            a.download = 'personal_portfolio.html';
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-        }
-
-        // --- WEB SOCKET, VOICE API, & INTERVIEW ARCHITECTURE ---
-        let socket = io(); // Global Persistent Socket
-        let recognition = null;
-        let isRecording = false;
-        let stream = null;
-        let metricInterval = null;
-        
-        // Auto-Applier Bot Logs Handlers
-        socket.on('bot_log', (data) => {
-            const terminal = document.getElementById('bot-terminal`);
-            if(terminal) {
-                const time = new Date().toLocaleTimeString();
-                terminal.insertAdjacentHTML('beforeend', `<div class="mb-2 leading-relaxed"><span class="text-slate-500 mr-2">[${time}]</span> <span class="text-slate-300">${data.message}</span></div>`);
-                terminal.scrollTop = terminal.scrollHeight;
-            }
-        });
-        
-        socket.on('bot_status', (data) => {
-            const statusEl = document.getElementById('bot-status`);
-            const pulseEl = document.getElementById('bot-pulse`);
-            const btn = document.getElementById('btn-start-bot`);
-            
-            if(statusEl) statusEl.innerText = data.status;
-            if (data.status === 'RUNNING') {
-                if(pulseEl) pulseEl.classList.remove('hidden`);
-            } else {
-                if(pulseEl) pulseEl.classList.add('hidden`);
-                if(btn) {
-                    btn.innerHTML = 'Launch Auto-Applier <i data-lucide="rocket" class="w-5 h-5 group-hover:-translate-y-1 group-hover:translate-x-1 transition"></i>';
-                    btn.disabled = false;
-                }
-                // Auto-refresh the applications log when bot finishes
-                loadApplicationsLog();
-            }
-            lucide.createIcons();
-        });
-        
-        socket.on('bot_stats', (data) => {
-            const applied = document.getElementById('bot-stat-applied`);
-            const jobs = document.getElementById('bot-stat-jobs`);
-            const cv = document.getElementById('bot-stat-cv`);
-            if(applied) applied.innerText = data.applied ?? 0;
-            if(jobs) jobs.innerText = data.jobs ?? 0;
-            if(cv) cv.innerText = data.cv ?? 0;
-        });
-        
-        // Initialize Speech API
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            recognition = new SpeechRecognition();
-            recognition.continuous = false;
-            recognition.interimResults = true;
-            
-            recognition.lang = 'en-US';
-            
-            recognition.onstart = function() {
-                isRecording = true;
-                document.getElementById('mic-icon').classList.add('text-red-500', 'animate-pulse`);
-                document.getElementById('interview-input').placeholder = "Listening directly to your microphone...";
-            };
-            
-            recognition.onresult = function(event) {
-                let interimTranscript = '';
-                let finalTranscript = '';
-                for (let i = event.resultIndex; i < event.results.length; ++i) {
-                    if (event.results[i].isFinal) {
-                        finalTranscript += event.results[i][0].transcript;
-                    } else {
-                        interimTranscript += event.results[i][0].transcript;
-                    }
-                }
-                const inputField = document.getElementById('interview-input`);
-                if (finalTranscript) {
-                    inputField.value = finalTranscript;
-                    toggleVoiceInput(); // Auto stop listening when done speaking
-                    setTimeout(() => sendInterviewMessage(), 500); // Auto send!
-                } else {
-                    inputField.value = interimTranscript;
-                }
-            };
-            
-            recognition.onerror = function(event) {
-                isRecording = false;
-                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse`);
-                document.getElementById('interview-input').placeholder = "Type your response to the recruiter...";
-                
-                // Extremely Explicit Voice Error Handling to debug why it crashed on their PC
-                console.error("Voice Recognition Error:", event.error);
-                if (event.error === 'not-allowed') {
-                    alert("VOICE ERROR: Microphone access was denied! Wait, if you are running this app on 'http://127.0.0.1:5001', the browser will BLOCK microphone access due to security policies! You MUST access the app locally via 'http://localhost:5001' to enable microphone permissions on Windows.");
-                } else {
-                    alert("VOICE ERROR: " + event.error);
-                }
-            };
-            recognition.onend = function() {
-                if(isRecording) recognition.start(); // Keep alive if still supposed to listen
-            };
-        }
-        
-        function toggleVoiceInput() {
-            if (!recognition) return alert("Your browser doesn't support the raw Speech API.");
-            if (isRecording) {
-                isRecording = false;
-                recognition.stop();
-                document.getElementById('mic-icon').classList.remove('text-red-500', 'animate-pulse`);
-                document.getElementById('interview-input').placeholder = "Type your response to the recruiter...";
-            } else {
-                document.getElementById('interview-input').value = '';
-                recognition.start();
-            }
-        }
-        
-        async function startWebcam() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                document.getElementById('webcam-feed').srcObject = stream;
-            } catch (err) {
-                console.log("Webcam denied or unavailable.");
-            }
-        }
-        
-        function updateFakeMetrics() {
-            // Give them a simulated God-Level analysis experience
-            const newEye = Math.floor(Math.random() * (99 - 85 + 1) + 85);
-            const newConf = Math.floor(Math.random() * (98 - 75 + 1) + 75);
-            
-            document.getElementById('metric-eye').innerText = newEye + "%";
-            document.getElementById('metric-eye-bar').style.width = newEye + "%";
-            
-            document.getElementById('metric-conf').innerText = newConf + "%";
-            document.getElementById('metric-conf-bar').style.width = newConf + "%";
-        }
-
-        // Interview Stream Global Handler
-        socket.on('interview_stream', (data) => {
-            const statusText = document.getElementById('interview-status`);
-            const inputField = document.getElementById('interview-input`);
-            const sendBtn = document.getElementById('btn-interview-send`);
-            const micBtn = document.getElementById('btn-interview-mic`);
-            const transcript = document.getElementById('interview-transcript`);
-            const audioBar = document.getElementById('audio-bar`);
-            
-            if (!statusText) return; // Ensures safe UI bounds
-            
-            if (data.status) {
-                statusText.innerText = data.status;
-                statusText.classList.add('animate-pulse', 'text-amber-400`);
-            }
-            
-            if (data.bot_talking) {
-                inputField.disabled = true;
-                sendBtn.disabled = true;
-                if(micBtn) micBtn.disabled = true;
-                inputField.placeholder = "Recruiter is analyzing...";
-                audioBar.classList.remove('h-6`);
-                audioBar.classList.add('h-10`);
-            } else if (data.text) {
-                // The bot has spoken!
-                statusText.innerText = "Your turn to speak or type.";
-                statusText.classList.remove('animate-pulse', 'text-amber-400`);
-                statusText.classList.add('text-emerald-400`);
-                inputField.disabled = false;
-                sendBtn.disabled = false;
-                if(micBtn) micBtn.disabled = false;
-                inputField.placeholder = "Type your response to the recruiter...";
-                // if(!isRecording) inputField.focus(); 
-                audioBar.classList.remove('h-10`);
-                audioBar.classList.add('h-6`);
-                // Extract [TIP] ... [/TIP]
-                let rawText = data.text;
-                let tipsHtml = '';
-                const tipMatch = rawText.match(/\[TIP\]([\s\S]*?)\[\/TIP\]/i);
-                if (tipMatch) {
-                    tipsHtml = `<div class="mt-4 p-4 bg-emerald-900/40 border-l-4 border-emerald-500 rounded-r-xl shadow-inner mb-3">
-                        <p class="text-xs text-emerald-400 font-bold uppercase tracking-wider mb-2 flex items-center gap-1"><i data-lucide="check-circle" class="w-4 h-4"></i> Notable Improvement Tips</p>
-                        <p class="text-emerald-100 text-sm leading-relaxed italic">${tipMatch[1].trim().replace(/\n/g, '<br>')}</p>
-                    </div>`;
-                    rawText = rawText.replace(tipMatch[0], `);
-                }
-                
-                // Parse Markdown logic: **Text** -> Highly styled blocks
-                let formattedText = rawText.replace(/\*\*(.*?)\*\*/g, '<br><span class="font-bold text-indigo-300 bg-indigo-900/60 shadow-inner px-4 py-3 rounded-xl block border-l-4 border-indigo-500 mb-2 mt-2">$1</span>').replace(/\n/g, '<br>`);
-                
-                // Append the tips block
-                formattedText = formattedText + tipsHtml;
-                
-                // Add message to transcript
-                const msgHTML = `
-                    <div class="flex gap-4">
-                        <div class="w-10 h-10 rounded-full bg-indigo-900 border-2 border-indigo-500/50 flex items-center justify-center shrink-0 shadow-[0_0_10px_rgba(99,102,241,0.3)]">
-                            <i data-lucide="bot" class="w-6 h-6 text-indigo-300"></i>
-                        </div>
-                        <div class="bg-indigo-900/40 border border-indigo-500/20 p-4 rounded-2xl rounded-tl-sm shadow-sm flex-1">
-                            <p class="text-indigo-100 leading-relaxed font-medium text-sm">${formattedText}</p>
-                        </div>
-                    </div>
-                `;
-                transcript.insertAdjacentHTML('beforeend', msgHTML);
-                transcript.scrollTop = transcript.scrollHeight;
-                lucide.createIcons();
-            }
-        });
 
         function openInterviewModal() {
-            const modal = document.getElementById('interview-modal`);
-            const card = document.getElementById('interview-card`);
-            modal.classList.remove('hidden`);
-            
-            // Trigger animation
-            setTimeout(() => {
-                modal.classList.remove('opacity-0`);
-                card.classList.remove('scale-95`);
-                startWebcam(); // Turn on their camera!
-                metricInterval = setInterval(updateFakeMetrics, 3000); // Fluctuate metrics
-            }, 10);
-            
-            document.getElementById('interview-status').innerText = "WebSocket Persistent Connection Alive: Initiating Interview sequence...";
+            document.getElementById('interview-modal').style.display = 'flex';
             socket.emit('start_interview', {});
         }
-        
-        // Initialize Speech API
-        
+
         function closeInterviewModal() {
-            const modal = document.getElementById('interview-modal`);
-            const card = document.getElementById('interview-card`);
-            modal.classList.add('opacity-0`);
-            card.classList.add('scale-95`);
-            
-            // Turn off camera and mic
-            if (isRecording) toggleVoiceInput();
-            if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
-            if (metricInterval) clearInterval(metricInterval);
-            
-            setTimeout(() => {
-                modal.classList.add('hidden`);
-                // We DO NOT disconnect the global socket so background bots stay alive!
-                document.getElementById('interview-transcript').innerHTML = '<div class="text-center text-slate-500 text-sm py-4 border-b border-slate-700/50">End-to-end WebSocket connection established. Commencing technical screening.</div>';
-                document.getElementById('interview-input').disabled = true;
-                document.getElementById('btn-interview-send').disabled = true;
-                if(document.getElementById('btn-interview-mic')) document.getElementById('btn-interview-mic').disabled = true;
-            }, 300);
-        }
-        
-        function sendInterviewMessage() {
-            const input = document.getElementById('interview-input`);
-            const text = input.value.trim();
-            if (!text || !socket) return;
-            
-            const transcript = document.getElementById('interview-transcript`);
-            if (isRecording) toggleVoiceInput(); // Turn off mic when sending
-            
-            // Render user text immediately
-            const msgHTML = `
-                <div class="flex gap-4 ml-12 justify-end">
-                    <div class="bg-slate-700/50 border border-slate-600/50 p-4 rounded-2xl rounded-tr-sm shadow-sm">
-                        <p class="text-slate-200 leading-relaxed">${text}</p>
-                    </div>
-                    <div class="w-10 h-10 rounded-full bg-slate-700 border-2 border-slate-500 flex items-center justify-center shrink-0">
-                        <span class="text-sm font-bold text-slate-300">U</span>
-                    </div>
-                </div>
-            `;
-            transcript.insertAdjacentHTML('beforeend', msgHTML);
-            transcript.scrollTop = transcript.scrollHeight;
-            
-            input.value = '';
-            input.disabled = true;
-            document.getElementById('btn-interview-send').disabled = true;
-            if(document.getElementById('btn-interview-mic')) document.getElementById('btn-interview-mic').disabled = true;
-            document.getElementById('interview-status').innerText = "Processing streaming response...";
-            
-            // Emit to backend.
-            socket.emit('interview_message', {message: text});
+            document.getElementById('interview-modal').style.display = 'none';
         }
 
+        function sendInterviewMessage() {
+            const input = document.getElementById('interview-input');
+            const text = input.value.trim();
+            if(!text) return;
+            input.value = '';
+            socket.emit('interview_message', { message: text });
+        }
+
+        socket.on('interview_stream', (data) => {
+            const container = document.getElementById('interview-transcript');
+            if(data.text) {
+                container.innerHTML += `<div class="p-4 bg-indigo-50 rounded-xl"><b>Recruiter:</b> ${data.text}</div>`;
+                container.scrollTop = container.scrollHeight;
+            }
+        });
+
         loadProfile();
+        lucide.createIcons();
     </script>
+
+    <!-- Firebase SDKs -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // --- YOUR FIREBASE CONFIG ---
         const firebaseConfig = {
           apiKey: "AIzaSyDDFiZ2OAahWHNSxJWa7PFAzdHAEVf5lCc",
           authDomain: "navora-a5c62.firebaseapp.com",
@@ -1504,48 +288,23 @@
           appId: "1:970616609774:web:e95117aac44c85415c8cff",
           measurementId: "G-380697P1Y8"
         };
-        // -----------------------------
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
 
-        // Global Auth Check
         onAuthStateChanged(auth, (user) => {
-            const loadingOverlay = document.getElementById('auth-loading');
+            const loading = document.getElementById('auth-loading');
             if (!user) {
-                console.log("No user found, redirecting to login...");
                 window.location.replace('login.html');
             } else {
-                console.log("Authenticated as:", user.email);
-                // Update sidebar with real user info
-                const nameEl = document.getElementById('sidebar-user-name');
-                const initialEl = document.getElementById('sidebar-user-initial');
-                
-                if (user.displayName) {
-                    nameEl.innerText = user.displayName;
-                    initialEl.innerText = user.displayName.charAt(0).toUpperCase();
-                } else if (user.email) {
-                    nameEl.innerText = user.email.split('@')[0];
-                    initialEl.innerText = user.email.charAt(0).toUpperCase();
-                }
-
-                // Hide loading overlay
-                if (loadingOverlay) {
-                    loadingOverlay.style.opacity = '0';
-                    setTimeout(() => loadingOverlay.classList.add('hidden'), 500);
+                if (loading) {
+                    loading.style.opacity = '0';
+                    setTimeout(() => loading.remove(), 500);
                 }
             }
         });
 
-        // Logout logic
-        document.getElementById('logout-btn').onclick = async () => {
-            try {
-                await signOut(auth);
-                window.location.href = '/login';
-            } catch (error) {
-                console.error("Logout failed", error);
-            }
-        };
+        document.getElementById('logout-btn').onclick = () => signOut(auth);
     </script>
 </body>
 </html>
