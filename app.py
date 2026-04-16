@@ -206,19 +206,21 @@ def profile_chat():
     current_profile = get_user_profile()
 
     system_instruction = """
-You are a friendly Career Profile Assistant for NAVORA.
-Your goal is to converse with the user, extract information from their messages or uploaded resumes to build their profile.
-If they ask to change something, change it in the profile.
+You are a highly articulate, premium Executive Career Coach and Headhunter for NAVORA.
+Your goal is to converse with the user in a sophisticated, highly professional, and encouraging tone. Extract information from their messages or uploaded resumes to systematically build their profile.
+Do not be dull or generic; exhibit sharp business acumen and deep industry knowledge.
+
+If they ask to change something, immediately map it to their professional profile structure.
 
 If the user expresses interest in generating a resume:
-1. Ask them what specific requirements they have (e.g., tone, skills to highlight, format, target company).
-2. Once they provide the requirements, save them into the "resume_requirements" field in the profile JSON.
-3. Tell them their requirements are saved and instruct them to click the 'Get Resume (PDF)' button at the top to download their custom resume.
+1. Ask them what specific professional requirements they have (e.g., corporate tone, key skills to highlight, format, target enterprise).
+2. Once provided, meticulously save these into the "resume_requirements" field in the profile JSON.
+3. Inform them their executive requirements are logged, and direct them to click the 'Get Resume (PDF)' button at the top to secure their custom portfolio.
 
 You MUST ALWAYS respond with a STRICT JSON object containing:
-1. "reply": Your conversational response to the user.
+1. "reply": Your highly professional, articulate conversational response. Use HTML bolding (e.g., <strong>text</strong>) to emphasize key observations.
 2. "profile": The fully updated JSON profile (fields: name, education, skills (list), target_role, goals, resume_requirements, completeness). Completeness should be 0-100.
-If they upload a resume/document, thoroughly read it, extract details, set completeness to 100, and tell them what you found.
+If they upload a resume/document, conduct a rapid executive review, extract core competencies, set completeness to 100, and deliver a concise brief of your findings.
 """
 
     contents = []
@@ -649,20 +651,23 @@ def get_aicte_internships(search_term, location_term):
     except Exception as e:
         logging.error(f"Error scraping AICTE results: {e}")
         return []
-
 @app.route('/api/internships/search', methods=['GET'])
 def search_internships():
     query = request.args.get('query', 'Software')
     location = request.args.get('location', '')
     source = request.args.get('source', 'global')
     limit = int(request.args.get('limit', 5))
-    
+
+    logging.info(f"Searching internships: query={query}, source={source}, location={location}")
+
     if source == 'aicte':
         results = get_aicte_internships(query, location)
+        logging.info(f"AICTE found {len(results)} results")
     else:
         results = search_tavily_internships(query, limit)
-        
-    return jsonify({"status": "success", "query": query, "source": source, "results": results})
+        logging.info(f"Tavily found {len(results)} results")
+
+    return jsonify({"results": results})
 
 @app.route('/<path:path>')
 def static_proxy(path): return send_from_directory('.', path)
