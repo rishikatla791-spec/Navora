@@ -11,11 +11,7 @@
     ],
     "rewrites": [
       {
-        "source": "/login",
-        "destination": "/login.html"
-      },
-      {
-        "source": "/api/**",
+        "source": "**",
         "destination": "/index.html"
       }
     ]
