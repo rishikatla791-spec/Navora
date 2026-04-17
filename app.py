@@ -193,8 +193,7 @@ def call_gemini_json(prompt, system_instruction=None, max_retries=3, use_search=
             tools = [types.Tool(google_search=types.GoogleSearch())] if use_search else None
             config = types.GenerateContentConfig(
                 response_mime_type="application/json", 
-                temperature=0.2,
-                tools=tools
+                temperature=0.2
             )
             if system_instruction: config.system_instruction = system_instruction
             response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt, config=config)
