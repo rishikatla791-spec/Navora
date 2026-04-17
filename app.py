@@ -168,7 +168,7 @@ Data:
 Title: {title}
 Content: {content}"""
             summary_res = client.models.generate_content(
-                model='gemini-3-flash-preview', 
+                model='gemini-2.5-flash', 
                 contents=summary_prompt,
                 config=types.GenerateContentConfig(temperature=0.3)
             )
@@ -197,7 +197,7 @@ def call_gemini_json(prompt, system_instruction=None, max_retries=3, use_search=
                 tools=tools
             )
             if system_instruction: config.system_instruction = system_instruction
-            response = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt, config=config)
+            response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt, config=config)
             cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
             # Handle potential markdown artifacts
             if not cleaned_text.startswith('{') and not cleaned_text.startswith('['):
@@ -298,7 +298,7 @@ RESPONSE FORMAT (STRICT JSON):
                 temperature=0.4,
                 tools=[types.Tool(google_search=types.GoogleSearch())]
             )
-            response = client.models.generate_content(model='gemini-3-flash-preview', contents=contents, config=config)
+            response = client.models.generate_content(model='gemini-2.5-flash', contents=contents, config=config)
             cleaned_text = response.text.replace("```json", "").replace("```", "").strip()
             
             if not cleaned_text.startswith('{'):
@@ -382,7 +382,7 @@ def generate_resume():
     for attempt in range(2):
         try:
             config = types.GenerateContentConfig(temperature=0.3)
-            response = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt, config=config)
+            response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt, config=config)
             
             html_content = response.text.replace('```html', '').replace('```', '').strip()
             return jsonify({"status": "success", "html": html_content})
@@ -577,7 +577,7 @@ def background_auto_applier(role, test_mode=True):
              
              # Call Gemini to dynamically generate customized cover letter
              prompt = f"You represent {profile.get('name', 'Katla Rishi')}. Write an ultra-short, highly technical 2-sentence cover letter snippet for an internship at {company_name}. The role is {role}. Do NOT use markdown. Be confident, mention {', '.join(profile.get('skills', [])[:3]) if profile.get('skills') else 'MERN stack coding'}."
-             res = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt)
+             res = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
              cover_letter = res.text.strip()
              job_url = job.get('url', '')
              
@@ -816,7 +816,7 @@ Company: {company}
 Details: {attributes_str}"""
             try:
                 summary_res = client.models.generate_content(
-                    model='gemini-3-flash-preview', 
+                    model='gemini-2.5-flash', 
                     contents=summary_prompt,
                     config=types.GenerateContentConfig(temperature=0.3)
                 )
@@ -984,7 +984,7 @@ def handle_interview_start(data):
     """
     
     try:
-        response = client.models.generate_content(model='gemini-3-flash-preview', contents=prompt)
+        response = client.models.generate_content(model='gemini-2.5-flash', contents=prompt)
         emit('interview_stream', {'speaker': 'ai', 'text': response.text})
     except Exception as e:
         emit('interview_stream', {'speaker': 'system', 'text': f"Connection failed: {str(e)}"})
@@ -1024,7 +1024,7 @@ def handle_interview_message(data):
     
     try:
         config = types.GenerateContentConfig(system_instruction=system_instruction, temperature=0.4)
-        response = client.models.generate_content(model='gemini-3-flash-preview', contents=contents, config=config)
+        response = client.models.generate_content(model='gemini-2.5-flash', contents=contents, config=config)
         emit('interview_stream', {'speaker': 'ai', 'text': response.text})
     except Exception as e:
         emit('interview_stream', {'speaker': 'system', 'text': f"Connection failed: {str(e)}"})
