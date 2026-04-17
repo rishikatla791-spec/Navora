@@ -4,8 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NAVORA - AI Career Guidance</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232563eb%22/><text y=%22.85em%22 x=%22.15em%22 font-size=%2270%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22>N</text></svg>">
+    <link href="output.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@0.577.0"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -21,6 +22,9 @@
         .nav-item:hover { background: #f8fafc; color: #1e293b; }
         .nav-item.active { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
         .nav-item.active i { color: white; }
+        .full-terminal { height: 85vh !important; }
+        .terminal-collapsed { height: 12rem; }
+        #bot-terminal { transition: all 0.3s ease-in-out; }
     </style>
 </head>
 <body class="bg-slate-50 flex h-screen overflow-hidden">
@@ -139,7 +143,12 @@
                     <div class="relative bg-slate-50 border border-slate-200 rounded-2xl flex items-center p-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition">
                         <i data-lucide="search" class="text-slate-400 w-5 h-5 ml-4"></i>
                         <input type="text" id="search-query" placeholder="web development" class="flex-1 bg-transparent px-4 py-3 outline-none text-slate-800">
-                        <button onclick="startSearch()" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition">Search</button>
+                        <div class="flex gap-2">
+                            <button onclick="startSearch()" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition">Search</button>
+                            <button onclick="startSearch(true)" title="Force Refresh" class="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition shadow-sm flex items-center justify-center">
+                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                            </button>
+                        </div>
                     </div>
                     
                     <div id="location-input-container" class="relative bg-slate-50 border border-slate-200 rounded-2xl flex items-center p-2 focus-within:ring-2 focus-within:border-blue-500 transition">
@@ -240,9 +249,17 @@
                 
                 <!-- Input Area -->
                 <div class="p-4 bg-white border-t border-slate-100">
+                    <div id="file-preview" class="hidden mb-2 p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i>
+                            <span id="file-name" class="text-xs font-semibold text-indigo-700 truncate max-w-[200px]">resume.pdf</span>
+                        </div>
+                        <button onclick="clearFile()" class="text-indigo-400 hover:text-red-500">✕</button>
+                    </div>
                     <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition shadow-inner">
-                        <button class="p-2 text-slate-400 hover:text-indigo-600 transition"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
-                        <input type="text" id="chat-input" class="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 px-2" placeholder="Detail your experience or goals..." onkeypress="handleChatEnter(event)">
+                        <input type="file" id="resume-upload" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event)">
+                        <button onclick="document.getElementById('resume-upload').click()" class="p-2 text-slate-400 hover:text-indigo-600 transition"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
+                        <input type="text" id="chat-input" class="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 px-2" placeholder="Detail your experience or upload resume..." onkeypress="handleChatEnter(event)">
                         <button onclick="sendChatMessage()" class="p-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition flex items-center justify-center min-w-[40px]"><i data-lucide="send" class="w-4 h-4"></i></button>
                     </div>
                 </div>
@@ -267,7 +284,8 @@
                     <label class="block text-sm font-medium text-slate-600">Target Role</label>
                     <div class="flex gap-4">
                         <input type="text" id="bot-target-role" placeholder="Software Engineer Intern" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-emerald-500">
-                        <button onclick="startAutoBot()" class="px-6 bg-emerald-600 text-white font-bold rounded-xl shadow-md hover:bg-emerald-700 flex items-center gap-2">Bot Running in Background <i data-lucide="settings" class="w-4 h-4 animate-spin-slow"></i></button>
+                        <button id="autobot-test-btn" onclick="startAutoBot(true)" class="px-6 py-3 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold rounded-xl shadow-sm flex items-center gap-2 transition"><i data-lucide="flask-conical" class="w-4 h-4 text-indigo-500"></i> Test Simulator</button>
+                        <button id="autobot-live-btn" onclick="startAutoBot(false)" class="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-md hover:bg-emerald-700 flex items-center gap-2 transition">Launch Auto-Applier <i data-lucide="rocket" class="w-4 h-4"></i></button>
                     </div>
                     <div class="flex items-center gap-2 text-xs font-semibold text-emerald-600 mt-2">
                         <span class="text-slate-500 font-medium">Bot Status: <span class="text-slate-800 font-bold">RUNNING</span></span>
@@ -279,15 +297,15 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                 <div class="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
-                    <h4 class="text-3xl font-bold text-emerald-600">0</h4>
+                    <h4 id="stats-applied" class="text-3xl font-bold text-emerald-600">0</h4>
                     <p class="text-xs text-slate-500 mt-1 font-medium">Applications Sent</p>
                 </div>
                 <div class="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
-                    <h4 class="text-3xl font-bold text-indigo-600">0</h4>
+                    <h4 id="stats-jobs" class="text-3xl font-bold text-indigo-600">0</h4>
                     <p class="text-xs text-slate-500 mt-1 font-medium">Jobs Found</p>
                 </div>
                 <div class="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
-                    <h4 class="text-3xl font-bold text-orange-500">0</h4>
+                    <h4 id="stats-cv" class="text-3xl font-bold text-orange-500">0</h4>
                     <p class="text-xs text-slate-500 mt-1 font-medium">Custom CVs Generated</p>
                 </div>
             </div>
@@ -302,98 +320,153 @@
                         </div>
                         <span class="ml-2 content-center text-slate-500">navora-autopilot -- bash</span>
                     </div>
-                    <div class="flex items-center gap-2 text-emerald-500 font-bold tracking-widest"><div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> LIVE</div>
+                    <div class="flex items-center gap-4">
+                        <div id="terminal-mode-badge" class="flex items-center gap-2 text-emerald-500 font-bold tracking-widest"><div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> LIVE</div>
+                        <button onclick="toggleTerminalSize()" class="bg-amber-500/10 text-amber-500 text-[11px] font-black uppercase tracking-widest px-4 py-2 rounded-lg border-2 border-amber-500 hover:bg-amber-500 hover:text-slate-900 transition flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse">
+                            <i data-lucide="terminal" class="w-4 h-4"></i> <span id="terminal-expand-text">Expand Bash View</span> <i data-lucide="maximize-2" id="terminal-expand-icon" class="w-3 h-3"></i>
+                        </button>
+                    </div>
                 </div>
-                <div id="bot-terminal" class="p-4 font-mono text-[13px] text-slate-300 h-48 overflow-y-auto space-y-2">
-                    <div class="text-indigo-400">Booting Navora Autopilot script...</div>
-                    <div class="flex gap-4"><span class="text-slate-500">[8:41:22 PM]</span> <span class="text-white">Initializing Headless Web Driver...</span></div>
-                    <div class="flex gap-4"><span class="text-slate-500">[8:41:23 PM]</span> <span class="text-white text-opacity-80">Bypassing Cloudflare bot protection... OK.</span></div>
-                    <div class="flex gap-4"><span class="text-slate-500">[8:41:24 PM]</span> <span class="text-white">Scraping live job boards for: Software Engineer Intern</span></div>
+                <div id="bot-terminal" class="p-4 font-mono text-[13px] text-slate-300 terminal-collapsed overflow-y-auto space-y-2">
                 </div>
             </div>
 
             <div class="bg-white border border-slate-100 rounded-2xl shadow-sm pb-10">
                 <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
-                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i data-lucide="archive" class="w-4 h-4 text-indigo-500"></i> Applications Log <span class="bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">5 saved</span></h3>
-                    <button class="text-xs text-indigo-600 font-semibold flex items-center gap-1 hover:text-indigo-800"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh</button>
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i data-lucide="archive" class="w-4 h-4 text-indigo-500"></i> Applications Log <span id="app-log-count" class="bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">0 saved</span></h3>
+                    <button onclick="loadApplications()" class="text-xs text-indigo-600 font-semibold flex items-center gap-1 hover:text-indigo-800 transition"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh</button>
                 </div>
-                <div class="p-6">
-                    <div class="border-l-2 border-slate-200 pl-6 relative">
-                        <div class="absolute w-3 h-3 bg-slate-200 rounded-full -left-[7px] top-1.5 border-2 border-white"></div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <h4 class="font-bold text-slate-800 text-sm">Startup</h4>
-                            <span class="bg-emerald-50 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase">Applied</span>
-                        </div>
-                        <div class="text-xs text-slate-500 mb-4 flex items-center gap-1"><i data-lucide="target" class="w-3 h-3 rounded-full text-slate-400"></i> Software Engineer Intern  •  <i data-lucide="clock" class="w-3 h-3 text-slate-400 ml-1"></i> 2026-03-29 16:56:34</div>
-                        
-                        <div class="bg-slate-50 border border-slate-100 rounded-xl p-4 text-sm text-slate-600 italic leading-relaxed mb-4">
-                            "I leverage HTML and Git with surgical precision to optimize Skills Vitality & Enablement within high-velocity development pipelines. My technical acumen ensures I will architect high-impact solutions that immediately scale your startup's core engineering capabilities."
-                        </div>
-                        
-                        <div class="flex justify-between items-center">
-                            <div class="flex gap-2">
-                                <button class="px-3 py-1.5 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded pointer-events-none flex items-center gap-1.5"><i data-lucide="copy" class="w-3 h-3"></i> Copy Letter</button>
-                                <button class="px-3 py-1.5 bg-emerald-50 text-emerald-600 text-xs font-semibold rounded pointer-events-none flex items-center gap-1.5"><i data-lucide="external-link" class="w-3 h-3"></i> View Job</button>
-                            </div>
-                            <button class="px-3 py-1.5 text-red-500 text-xs font-semibold hover:bg-red-50 rounded flex items-center gap-1.5"><i data-lucide="trash-2" class="w-3 h-3"></i> Delete</button>
-                        </div>
-                    </div>
+                <div class="p-6" id="applications-log">
+                    <div class="text-center text-slate-400 py-10 font-bold animate-pulse text-sm">Loading applications...</div>
                 </div>
             </div>
         </section>
     </main>
 
     <!-- Interview Modal -->
-    <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900/90 backdrop-blur-sm hidden items-center justify-center p-4">
-        <div class="bg-white rounded-3xl w-full max-w-5xl h-[90vh] flex flex-col overflow-hidden shadow-2xl">
-            <div class="p-6 border-b flex justify-between items-center bg-white">
-                <h3 class="font-bold text-xl text-slate-800 flex items-center gap-2"><i data-lucide="video" class="text-blue-500"></i> AI Technical Recruiter</h3>
-                <button onclick="closeInterviewModal()" class="text-slate-400 hover:text-red-500 transition">✕</button>
+    <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900 hidden flex-col">
+        <!-- Top Bar -->
+        <div class="h-14 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-6">
+            <div class="flex items-center gap-3 text-white">
+                <i data-lucide="video" class="w-5 h-5 text-blue-400"></i>
+                <span class="font-bold text-sm">Google Technical Interview</span>
+                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded ml-2 animate-pulse">REC</span>
             </div>
-            <div class="flex flex-1 overflow-hidden">
-                <!-- Webcam Side -->
-                <div class="w-80 bg-slate-50 border-r p-6 flex flex-col items-center">
-                    <div class="w-full aspect-video bg-black rounded-2xl mb-6 relative overflow-hidden shadow-xl ring-4 ring-white">
-                        <video id="webcam-feed" autoplay playsinline class="w-full h-full object-cover"></video>
-                        <div class="absolute bottom-3 right-3 flex gap-2 items-center bg-black/40 px-2 py-1 rounded-full backdrop-blur-md">
-                            <div class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></div>
-                            <span class="text-[9px] text-white font-bold uppercase tracking-widest">Live Analysis</span>
+            <div id="interview-timer" class="text-slate-300 font-mono text-sm">45:00</div>
+            <button onclick="closeInterviewModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition">End Call</button>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left: Communication Panel (Webcam + Chat) -->
+            <div class="w-[400px] bg-slate-800 border-r border-slate-700 flex flex-col">
+                <!-- Video feeds -->
+                <div class="p-4 space-y-4">
+                    <!-- AI Profile -->
+                    <div class="aspect-video bg-slate-700 rounded-xl overflow-hidden relative shadow-lg">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-3xl text-white font-bold">G</div>
                         </div>
+                        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">Interviewer (Google)</div>
                     </div>
-                    <div class="w-full space-y-4">
-                        <div class="p-4 bg-white rounded-xl border shadow-sm">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Eye Contact Analysis</p>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="metric-eye" class="bg-blue-500 h-full rounded-full transition-all duration-1000" style="width: 85%"></div></div>
-                        </div>
-                        <div class="p-4 bg-white rounded-xl border shadow-sm">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase mb-2">Confidence Factor</p>
-                            <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden"><div id="metric-conf" class="bg-indigo-500 h-full rounded-full transition-all duration-1000" style="width: 70%"></div></div>
+                    <!-- User Webcam -->
+                    <div class="aspect-video bg-black rounded-xl overflow-hidden relative shadow-lg ring-2 ring-slate-600">
+                        <video id="webcam-feed" autoplay playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
+                        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">You</div>
+                    </div>
+                </div>
+                
+                <!-- Chat / Transcript -->
+                <div class="flex-1 flex flex-col bg-slate-900 border-t border-slate-700 overflow-hidden">
+                    <div class="p-3 bg-slate-800 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase tracking-wider">Live Transcript</div>
+                    <div id="interview-transcript" class="flex-1 overflow-y-auto p-4 space-y-4">
+                        <!-- Messages go here -->
+                    </div>
+                    <div class="p-3 bg-slate-800">
+                        <div class="flex gap-2">
+                            <input type="text" id="interview-chat-input" class="flex-1 bg-slate-700 text-white text-sm rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500" placeholder="Type to speak..." onkeypress="if(event.key==='Enter') sendInterviewMessage()">
+                            <button onclick="sendInterviewMessage()" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"><i data-lucide="send" class="w-4 h-4"></i></button>
                         </div>
                     </div>
                 </div>
-                <!-- Transcript Side -->
-                <div class="flex-1 flex flex-col">
-                    <div id="interview-transcript" class="flex-1 p-6 overflow-y-auto space-y-4 bg-white">
-                        <div class="p-4 bg-blue-50 border border-blue-100 rounded-2xl text-blue-800 text-sm font-medium">WebSocket connected. Commencing technical screening...</div>
+            </div>
+
+            <!-- Right: Collaborative Code Editor -->
+            <div class="flex-1 flex flex-col bg-[#1e1e1e]">
+                <div class="h-10 bg-[#2d2d2d] flex items-center px-4 border-b border-[#3d3d3d]">
+                    <div class="flex gap-2">
+                        <div class="px-3 py-1 bg-[#1e1e1e] text-slate-300 text-xs font-mono border-t-2 border-blue-500">solution.py</div>
                     </div>
-                    <div class="p-6 border-t flex gap-2 bg-slate-50">
-                        <input type="text" id="interview-input" class="flex-1 p-4 border rounded-2xl outline-none focus:ring-2 focus:ring-blue-500" placeholder="Your technical response...">
-                        <button onclick="sendInterviewMessage()" class="px-8 bg-indigo-600 text-white font-bold rounded-2xl shadow-lg">Send</button>
+                    <div class="ml-auto text-xs text-slate-400 flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Collaborative Whiteboard Active</div>
+                </div>
+                <div class="flex-1 relative">
+                    <!-- Simple textarea acting as code editor -->
+                    <textarea id="interview-code-editor" class="absolute inset-0 w-full h-full bg-[#1e1e1e] text-[#d4d4d4] p-4 font-mono text-[14px] leading-relaxed outline-none resize-none" spellcheck="false" placeholder="# Write your code here. The interviewer can see this live."></textarea>
+                </div>
+                <!-- Output Console -->
+                <div class="h-48 border-t border-[#3d3d3d] bg-[#1e1e1e] flex flex-col">
+                    <div class="h-8 bg-[#2d2d2d] flex items-center px-4">
+                        <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Whiteboard Output / Notes</span>
                     </div>
+                    <textarea id="interview-notes" class="flex-1 bg-transparent text-slate-400 p-3 font-mono text-xs outline-none resize-none" placeholder="Scratchpad for notes, complexities, etc."></textarea>
                 </div>
             </div>
         </div>
     </div>
 
-    <script>
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyDDFiZ2OAahWHNSxJWa7PFAzdHAEVf5lCc",
+          authDomain: "navora-a5c62.firebaseapp.com",
+          projectId: "navora-a5c62",
+          storageBucket: "navora-a5c62.firebasestorage.app",
+          messagingSenderId: "970616609774",
+          appId: "1:970616609774:web:e95117aac44c85415c8cff",
+          measurementId: "G-380697P1Y8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            const isBypass = localStorage.getItem('navora_bypass') === 'true';
+            
+            if (!user && !isBypass) {
+                window.location.href = "/login";
+            } else {
+                console.log("Authenticated as:", user ? user.email : "Guest (Bypass)");
+                // Update UI with user info
+                const userInitial = user ? user.email.charAt(0).toUpperCase() : 'G';
+                const userName = user ? (user.displayName || user.email.split('@')[0].toUpperCase()) : 'GUEST DEVELOPER';
+                
+                const profileInitialEl = document.querySelector('aside div.bg-slate-100.flex.items-center.justify-center');
+                if (profileInitialEl) profileInitialEl.innerText = userInitial;
+                
+                const profileNameEl = document.querySelector('aside p.text-sm.font-bold.truncate');
+                if (profileNameEl) profileNameEl.innerText = userName;
+            }
+        });
+
+        window.logout = () => {
+            localStorage.removeItem('navora_bypass');
+            signOut(auth).then(() => {
+                window.location.href = "/login";
+            });
+        };
+
         // --- GLOBAL CONFIG ---
-        const RENDER_URL = "";
+        const RENDER_URL = ""; // Empty string forces browser to use the current host (127.0.0.1:5001)
         const socket = io();
-        let chatHistory = [];
+        let chatHistory = [
+            {role:'model', text: "Greetings. I am your Navora Executive Coach. I am here to assist you in refining your professional background and accelerating your career goals. How may I be of service today?"}
+        ];
         let stream = null;
 
         // --- NAVIGATION ---
-        function switchTab(tabId) {
+        window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
             document.getElementById(`tab-${tabId}`).classList.add('active');
@@ -407,7 +480,7 @@
         // --- DASHBOARD & PROFILE ---
         async function loadProfile() {
             try {
-                const res = await fetch(`/api/profile`);
+                const res = await fetch(`${RENDER_URL}/api/profile`);
                 const data = await res.json();
                 document.getElementById('dash-completeness').innerText = (data.completeness || 0) + '%';
                 document.getElementById('dash-role').innerText = data.target_role || 'Not set';
@@ -415,7 +488,7 @@
                 
                 // Recommendations
                 const recContainer = document.getElementById('recommendations-container');
-                const recRes = await fetch(`/api/recommendations`);
+                const recRes = await fetch(`${RENDER_URL}/api/recommendations`);
                 const recData = await recRes.json();
                 if(recData.internships) {
                     recContainer.innerHTML = recData.internships.map(i => `
@@ -429,37 +502,56 @@
         }
 
         // --- INTERNSHIPS (AICTE & GLOBAL) ---
-        function toggleLocationInput() {
+        window.toggleLocationInput = function() {
             const source = document.querySelector('input[name="search_source"]:checked').value;
             document.getElementById('location-input-container').style.display = source === 'aicte' ? 'block' : 'none';
         }
 
-        async function startSearch() {
+        window.startSearch = async function(forceRefresh = false) {
             const query = document.getElementById('search-query').value;
             const location = document.getElementById('search-location').value;
             const source = document.querySelector('input[name="search_source"]:checked').value;
             const resultsDiv = document.getElementById('internship-results');
             
-            resultsDiv.innerHTML = '<p class="col-span-full text-center py-20 animate-pulse text-indigo-500 font-bold font-mono tracking-tighter">WAKING UP THE LIVE SCRAPERS...</p>';
+            resultsDiv.innerHTML = `<div class="col-span-full text-center py-20">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                <p class="text-indigo-500 font-bold font-mono tracking-tighter">
+                    ${forceRefresh ? 'BYPASSING CACHE & SCRAPING LIVE...' : 'GEMINI IS SUMMARIZING LIVE OPPORTUNITIES...'}
+                </p>
+            </div>`;
             
             try {
-                const res = await fetch(`/api/internships/search?query=${encodeURIComponent(query)}&source=${source}&location=${encodeURIComponent(location)}`);
+                const res = await fetch(`${RENDER_URL}/api/internships/search?query=${encodeURIComponent(query)}&source=${source}&location=${encodeURIComponent(location)}&refresh=${forceRefresh}`);
                 const data = await res.json();
+                
                 resultsDiv.innerHTML = data.results.map(j => `
-                    <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm flex flex-col justify-between">
+                    <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:border-blue-200 transition">
                         <div>
                             <div class="flex justify-between items-start mb-2">
                                 <h4 class="font-bold text-base text-slate-800 uppercase">${j.title}</h4>
                                 <span class="bg-orange-50 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase ml-2 shrink-0">${source === 'aicte' ? 'AICTE' : 'GLOBAL'}</span>
                             </div>
-                            <p class="text-slate-500 text-sm mb-4">${j.company}</p>
-                            <div class="text-xs text-slate-400 mb-5 flex items-center gap-1"><i data-lucide="file-text" class="w-3 h-3 text-yellow-500 min-w-3"></i> <span class="line-clamp-2 leading-relaxed">${j.attributes || (j.location ? j.location + ' | ' + (j.stipend || 'Stipend Unspecified') : 'Details Not Available')}</span></div>
+                            <p class="text-slate-500 text-sm mb-3">${j.company}</p>
+                            
+                            <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3 text-blue-500"></i> Gemini AI Brief</p>
+                                <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">${j.summary || 'Click apply to view full details of this opportunity.'}</p>
+                            </div>
+
+                            <div class="text-[11px] text-slate-400 mb-5 flex items-center gap-1 font-medium"><i data-lucide="map-pin" class="w-3 h-3 text-slate-400 min-w-3"></i> <span>${j.attributes || j.location || 'Remote/Flexible'}</span></div>
                         </div>
-                        <a href="${j.link}" target="_blank" class="block w-full py-2.5 border border-slate-200 text-slate-700 text-center rounded-xl font-semibold text-sm hover:bg-slate-50 transition">Apply Now</a>
+                        <a href="${j.link}" target="_blank" class="block w-full py-2.5 bg-slate-800 text-white text-center rounded-xl font-bold text-sm hover:bg-black transition shadow-sm">Apply via ${source.toUpperCase()}</a>
                     </div>
                 `).join('');
                 lucide.createIcons();
-            } catch(e) { resultsDiv.innerHTML = '<p class="text-red-500 col-span-full text-center">Search error. The Render server might be starting up (wait 60s).</p>'; }
+            } catch(e) { 
+                resultsDiv.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 font-bold bg-red-50 rounded-2xl border border-red-100 p-8">
+                    <i data-lucide="alert-circle" class="w-10 h-10 mx-auto mb-4 text-red-400"></i>
+                    <p>Search error. Please try again.</p>
+                    <p class="text-xs font-normal mt-2">${e.message}</p>
+                </div>`; 
+                lucide.createIcons();
+            }
         }
 
         // --- TRENDS & ROADMAP ---
@@ -467,7 +559,7 @@
             const container = document.getElementById('trends-container');
             container.innerHTML = '<p class="text-slate-400 animate-pulse col-span-full">Analyzing market trends...</p>';
             try {
-                const res = await fetch(`/api/trends`);
+                const res = await fetch(`${RENDER_URL}/api/trends`);
                 const data = await res.json();
                 container.innerHTML = data.trending.map((t, idx) => `
                     <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
@@ -481,23 +573,23 @@
             } catch(e) { console.error(e); }
         }
 
-        async function generateRoadmap() {
+        window.generateRoadmap = async function() {
             const target = document.getElementById('roadmap-target').value;
             const container = document.getElementById('roadmap-container');
             if(!target) return alert("Enter a target goal");
             container.innerHTML = '<p class="text-center py-10 font-bold text-blue-600 animate-bounce col-span-full">GEMINI AI IS ARCHITECTING YOUR JOURNEY...</p>';
             try {
-                const res = await fetch(`/api/roadmap?target=${encodeURIComponent(target)}`);
+                const res = await fetch(`${RENDER_URL}/api/roadmap?target=${encodeURIComponent(target)}`);
                 const data = await res.json();
                 container.innerHTML = '<div class="absolute left-[-16px] top-4 bottom-0 w-px bg-slate-200 z-0 hidden md:block"></div>' + data.roadmap.map((step, idx) => `
                     <div class="relative bg-white border border-slate-100 p-6 rounded-2xl shadow-sm mb-6 ml-0 md:ml-4 flex-1">
                         <!-- Timeline Dot -->
                         <div class="hidden md:block absolute -left-[24px] top-6 w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-sm z-10"></div>
                         <div class="flex justify-between items-start mb-3">
-                            <h4 class="font-bold text-slate-800 text-sm">Step ${idx+1}: ${step.step}</h4>
-                            <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded shrink-0 ml-2">3 months</span>
+                            <h4 class="font-bold text-slate-800 text-sm">Step ${idx+1}: ${step.title}</h4>
+                            <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded shrink-0 ml-2">${step.duration}</span>
                         </div>
-                        <p class="text-slate-500 text-xs leading-relaxed">${step.details}</p>
+                        <p class="text-slate-500 text-xs leading-relaxed">${step.description}</p>
                     </div>
                 `).join('');
                 lucide.createIcons();
@@ -505,11 +597,11 @@
         }
 
         // --- SOCIAL SYNC (GITHUB / LINKEDIN) ---
-        async function syncGithub() {
+        window.syncGithub = async function() {
             const username = document.getElementById('github-username').value;
             if(!username) return alert("Enter GitHub username");
             appendMessage('assistant', `Analyzing public repositories for user: ${username}...`);
-            const res = await fetch(`/api/profile/github`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username}) });
+            const res = await fetch(`${RENDER_URL}/api/profile/github`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username}) });
             const data = await res.json();
             if(data.status === 'success') {
                 appendMessage('assistant', `Sync Complete! Verified Skills: ${data.summary}`);
@@ -517,11 +609,11 @@
             }
         }
 
-        async function syncLinkedin() {
+        window.syncLinkedin = async function() {
             const url = document.getElementById('linkedin-url').value;
             if(!url) return alert("Enter LinkedIn Profile URL");
             appendMessage('assistant', "Extracting professional background via God-Level AI Scraper...");
-            const res = await fetch(`/api/profile/linkedin`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({linkedin_url: url}) });
+            const res = await fetch(`${RENDER_URL}/api/profile/linkedin`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({linkedin_url: url}) });
             const data = await res.json();
             if(data.status === 'success') {
                 appendMessage('assistant', `LinkedIn Sync Success! We found matches for: ${data.summary}`);
@@ -529,19 +621,40 @@
             }
         }
 
-        function handleChatEnter(event) {
+        window.handleChatEnter = function(event) {
             if (event.key === 'Enter') {
                 sendChatMessage();
             }
         }
 
         // --- CHAT ---
-        async function sendChatMessage() {
+        let selectedFile = null;
+
+        window.handleFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            selectedFile = file;
+            document.getElementById('file-preview').classList.remove('hidden');
+            document.getElementById('file-name').innerText = file.name;
+            lucide.createIcons();
+        }
+
+        window.clearFile = function() {
+            selectedFile = null;
+            document.getElementById('resume-upload').value = '';
+            document.getElementById('file-preview').classList.add('hidden');
+        }
+
+        window.sendChatMessage = async function() {
             const input = document.getElementById('chat-input');
             const text = input.value.trim();
-            if(!text) return;
+            if(!text && !selectedFile) return;
+            
+            const fileData = selectedFile;
             input.value = '';
-            appendMessage('user', text);
+            
+            const displayMessage = text + (fileData ? `<br><span class="text-[10px] opacity-70 italic flex items-center gap-1 mt-1"><i data-lucide="file-text" class="w-3 h-3"></i> Attached: ${fileData.name}</span>` : '');
+            appendMessage('user', displayMessage);
             
             // Add typing indicator
             const container = document.getElementById('chat-history');
@@ -561,17 +674,36 @@
             lucide.createIcons();
             container.scrollTop = container.scrollHeight;
 
+            let file_base64 = null;
+            if (fileData) {
+                file_base64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.readAsDataURL(fileData);
+                });
+            }
+
             try {
-                const res = await fetch(`/api/profile/chat`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ text, history: chatHistory }) });
+                const res = await fetch(`${RENDER_URL}/api/profile/chat`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ 
+                        text, 
+                        history: chatHistory,
+                        file_data: file_base64,
+                        file_mime: fileData ? fileData.type : null
+                    }) 
+                });
                 const data = await res.json();
                 
                 // Remove typing indicator
                 const typingEl = document.getElementById(typingId);
                 if(typingEl) typingEl.remove();
                 
+                clearFile();
                 appendMessage('assistant', data.reply);
                 chatHistory.push({role:'user', text}, {role:'model', text: data.reply});
-                loadProfile(); // Refresh profile changes from chat
+                loadProfile(); 
             } catch (e) {
                 const typingEl = document.getElementById(typingId);
                 if(typingEl) typingEl.remove();
@@ -584,7 +716,7 @@
             let messageHtml = '';
             
             // Convert simple markdown bolding to HTML
-            text = text.replace(/\\*\\*(.*?)\\*\\*/g, '<strong>$1</strong>');
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
             
             if (role === 'user') {
                 messageHtml = `
@@ -613,11 +745,32 @@
         }
 
         // --- AUTOBOT ---
-        async function startAutoBot() {
+        window.startAutoBot = async function(isTestMode = true) {
             const role = document.getElementById('bot-target-role').value;
             if(!role) return alert("Enter a target role for Autopilot");
-            await fetch(`/api/bot/auto-apply`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({target_role: role}) });
-            document.getElementById('bot-terminal').innerHTML += `<div class="text-white mt-2">>>> Launch sequence initiated for: ${role}</div>`;
+            
+            const liveBtn = document.getElementById('autobot-live-btn');
+            const testBtn = document.getElementById('autobot-test-btn');
+            const badge = document.getElementById('terminal-mode-badge');
+            
+            if (isTestMode) {
+                testBtn.innerHTML = `Simulating... <i data-lucide="settings" class="w-4 h-4 animate-spin-slow text-indigo-500"></i>`;
+                badge.innerHTML = `<div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div> TEST`;
+                badge.className = "flex items-center gap-2 text-indigo-500 font-bold tracking-widest";
+            } else {
+                liveBtn.innerHTML = `Running Live... <i data-lucide="settings" class="w-4 h-4 animate-spin-slow"></i>`;
+                badge.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> LIVE`;
+                badge.className = "flex items-center gap-2 text-emerald-500 font-bold tracking-widest";
+            }
+            
+            lucide.createIcons();
+            
+            await fetch(`${RENDER_URL}/api/bot/auto-apply`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({target_role: role, test_mode: isTestMode}) 
+            });
+            document.getElementById('bot-terminal').innerHTML = `<div class="text-indigo-400 mt-2 font-bold mb-2">>>> Launching in ${isTestMode ? 'TEST MODE' : 'LIVE MODE'} for: ${role}</div>`;
         }
 
         socket.on('bot_log', (data) => {
@@ -626,41 +779,177 @@
             terminal.scrollTop = terminal.scrollHeight;
         });
 
-        // --- INTERVIEW SIMULATOR ---
-        async function startWebcam() {
-            try {
-                stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                document.getElementById('webcam-feed').srcObject = stream;
-            } catch (err) { console.log("Webcam access denied."); }
+        socket.on('bot_stats', (data) => {
+            document.getElementById('stats-jobs').innerText = data.jobs;
+            document.getElementById('stats-applied').innerText = data.applied;
+            document.getElementById('stats-cv').innerText = data.cv;
+        });
+
+        socket.on('bot_status', (data) => {
+            if (data.status === 'IDLE' || data.status === 'CRASHED') {
+                const liveBtn = document.getElementById('autobot-live-btn');
+                const testBtn = document.getElementById('autobot-test-btn');
+                
+                liveBtn.innerHTML = `Launch Auto-Applier <i data-lucide="rocket" class="w-4 h-4"></i>`;
+                testBtn.innerHTML = `<i data-lucide="flask-conical" class="w-4 h-4 text-indigo-500"></i> Test Simulator`;
+                lucide.createIcons();
+                
+                if (data.status === 'IDLE') {
+                    startAutoBot.completed = true;
+                    loadApplications(); // Auto update application logs when bot succeeds!
+                }
+            }
+        });
+
+        window.toggleTerminalSize = function() {
+            const terminal = document.getElementById('bot-terminal');
+            const icon = document.getElementById('terminal-expand-icon');
+            const text = document.getElementById('terminal-expand-text');
+            const isExpanding = !terminal.classList.contains('full-terminal');
+            
+            terminal.classList.toggle('full-terminal');
+            
+            if (isExpanding) {
+                icon.setAttribute('data-lucide', 'minimize-2');
+                text.innerText = "Close Bash View";
+            } else {
+                icon.setAttribute('data-lucide', 'maximize-2');
+                text.innerText = "Expand Bash View";
+            }
+            lucide.createIcons();
+            terminal.scrollTop = terminal.scrollHeight;
         }
 
-        function openInterviewModal() {
+        async function loadApplications() {
+            try {
+                document.getElementById('applications-log').innerHTML = '<div class="text-center text-slate-400 py-10 font-bold animate-pulse text-sm">Loading applications...</div>';
+                const res = await fetch('/api/applications');
+                const data = await res.json();
+                const apps = data.applications || [];
+                
+                document.getElementById('app-log-count').innerText = `${apps.length} saved`;
+                
+                if (apps.length === 0) {
+                    document.getElementById('applications-log').innerHTML = '<div class="text-center text-slate-400 py-10 font-bold text-sm">No applications recorded yet. Run the Autopilot to get started!</div>';
+                    return;
+                }
+                
+                document.getElementById('applications-log').innerHTML = apps.map((app, i) => {
+                    let badgeClass = "bg-emerald-50 text-emerald-600";
+                    if(app.status.includes('TEST')) badgeClass = "bg-indigo-50 text-indigo-600";
+                    if(app.status.includes('Review') || app.status.includes('Draft')) badgeClass = "bg-amber-50 text-amber-600";
+                    
+                    return `
+                    <div class="border-l-2 border-slate-200 pl-6 relative ${i > 0 ? 'mt-10' : ''}">
+                        <div class="absolute w-3 h-3 bg-slate-200 rounded-full -left-[7px] top-1.5 border-2 border-white"></div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-slate-800 text-sm">${app.company || 'Unknown Company'}</h4>
+                            <span class="${badgeClass} text-[10px] font-bold px-2 py-0.5 rounded uppercase">${app.status || 'Generated'}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-medium mb-3 flex items-center gap-2"><i data-lucide="briefcase" class="w-3 h-3"></i> ${app.role} • <i data-lucide="clock" class="w-3 h-3"></i> ${new Date(app.created_at).toLocaleString()}</div>
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl text-slate-600 text-xs italic mb-4">"${app.cover_letter || 'No custom letter generated.'}"</div>
+                        <div class="flex gap-4">
+                            <button class="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:text-indigo-800 transition"><i data-lucide="copy" class="w-3 h-3"></i> Copy Letter</button>
+                            ${app.job_url ? `<a href="${app.job_url}" target="_blank" class="text-emerald-600 font-bold text-xs flex items-center gap-1 hover:text-emerald-800 transition"><i data-lucide="external-link" class="w-3 h-3"></i> View Job</a>` : ''}
+                            <button class="text-red-400 font-bold text-xs flex items-center gap-1 ml-auto hover:text-red-600 transition"><i data-lucide="trash-2" class="w-3 h-3"></i> Delete</button>
+                        </div>
+                    </div>`
+                }).join('');
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // --- INTERVIEW SIMULATOR (LIVE COLLABORATIVE ENVIRO) ---
+        let interviewHistory = [];
+        let interviewTimer = null;
+        let timeRemaining = 2700; // 45 minutes
+
+        window.openInterviewModal = async function() {
             document.getElementById('interview-modal').style.display = 'flex';
-            startWebcam();
+            document.getElementById('interview-transcript').innerHTML = '';
+            document.getElementById('interview-code-editor').value = '';
+            interviewHistory = [];
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                document.getElementById('webcam-feed').srcObject = stream;
+            } catch (err) { console.log("Webcam access denied."); }
+            
+            startInterviewTimer(45 * 60);
             socket.emit('start_interview', {});
         }
 
-        function closeInterviewModal() {
-            document.getElementById('interview-modal').style.display = 'none';
-            if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        window.closeInterviewModal = function() {
+            if (confirm("Warning: Leaving the interview room will end the assessment. Proceed?")) {
+                document.getElementById('interview-modal').style.display = 'none';
+                clearInterval(interviewTimer);
+                if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            }
         }
 
-        function sendInterviewMessage() {
-            const input = document.getElementById('interview-input');
-            const text = input.value.trim();
-            if(!text) return;
-            input.value = '';
-            document.getElementById('interview-transcript').innerHTML += `<div class="p-3 bg-slate-800 text-white rounded-2xl ml-auto max-w-[80%] text-sm shadow-md">${text}</div>`;
-            socket.emit('interview_message', { message: text });
+        window.sendInterviewMessage = function() {
+            const input = document.getElementById('interview-chat-input');
+            const msg = input.value.trim();
+            const code = document.getElementById('interview-code-editor').value;
+            
+            if(!msg && !code) return;
+            
+            if(msg) {
+                appendInterviewMsg('user', msg);
+                interviewHistory.push({role: 'user', text: msg});
+                input.value = '';
+            } else {
+                appendInterviewMsg('user', '<span class="text-xs italic">Updated code on whiteboard.</span>');
+                interviewHistory.push({role: 'user', text: 'I updated the code.'});
+            }
+            
+            socket.emit('interview_message', { message: msg, code: code, history: interviewHistory });
         }
 
         socket.on('interview_stream', (data) => {
-            const container = document.getElementById('interview-transcript');
-            if(data.text) {
-                container.innerHTML += `<div class="p-4 bg-indigo-50 border border-indigo-100 rounded-2xl mr-auto max-w-[85%] text-indigo-900 font-medium text-sm shadow-sm"><b>AI RECRUITER:</b> ${data.text}</div>`;
-                container.scrollTop = container.scrollHeight;
+            if (data.speaker === 'system') {
+                const t = document.getElementById('interview-transcript');
+                const loader = document.getElementById('ai-typing');
+                if(loader) loader.remove();
+                t.innerHTML += `<div class="text-[10px] text-slate-500 italic text-center my-2" id="${data.text.includes('evaluating') ? 'ai-typing' : ''}">${data.text}</div>`;
+                t.scrollTop = t.scrollHeight;
+            } else if (data.speaker === 'ai') {
+                const loader = document.getElementById('ai-typing');
+                if(loader) loader.remove();
+                
+                // Format text to look nice
+                let htmlText = data.text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-800 p-2 rounded-lg mt-2 mb-2 overflow-x-auto text-[10px] font-mono text-slate-300 border border-slate-700"><code>$1</code></pre>');
+                
+                appendInterviewMsg('ai', htmlText);
+                interviewHistory.push({role: 'model', text: data.text});
             }
         });
+
+        function appendInterviewMsg(role, html) {
+            const t = document.getElementById('interview-transcript');
+            if (role === 'user') {
+                t.innerHTML += `<div class="bg-blue-600 text-white text-sm p-3 rounded-xl rounded-br-sm ml-auto max-w-[85%] mb-3 shadow-sm leading-relaxed">${html}</div>`;
+            } else {
+                t.innerHTML += `<div class="bg-slate-700 text-slate-100 text-sm p-3 rounded-xl rounded-bl-sm mr-auto max-w-[95%] mb-3 shadow-sm leading-relaxed">${html}</div>`;
+            }
+            t.scrollTop = t.scrollHeight;
+        }
+
+        function startInterviewTimer(seconds) {
+            timeRemaining = seconds;
+            clearInterval(interviewTimer);
+            interviewTimer = setInterval(() => {
+                timeRemaining--;
+                const mins = Math.floor(timeRemaining / 60);
+                const secs = timeRemaining % 60;
+                document.getElementById('interview-timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                if(timeRemaining <= 0) clearInterval(interviewTimer);
+            }, 1000);
+        }
 
         // --- INITIALIZE ---
         window.onload = () => {

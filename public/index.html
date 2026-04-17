@@ -1,89 +1,961 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Welcome to Firebase Hosting</title>
-
-    <!-- update the version number as needed -->
-    <script defer src="/__/firebase/12.12.0/firebase-app-compat.js"></script>
-    <!-- include only the Firebase features as you need -->
-    <script defer src="/__/firebase/12.12.0/firebase-auth-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-database-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-firestore-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-functions-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-messaging-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-storage-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-analytics-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-remote-config-compat.js"></script>
-    <script defer src="/__/firebase/12.12.0/firebase-performance-compat.js"></script>
-    <!-- 
-      initialize the SDK after all desired features are loaded, set useEmulator to false
-      to avoid connecting the SDK to running emulators.
-    -->
-    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
-
-    <style media="screen">
-      body { background: #ECEFF1; color: rgba(0,0,0,0.87); font-family: Roboto, Helvetica, Arial, sans-serif; margin: 0; padding: 0; }
-      #message { background: white; max-width: 360px; margin: 100px auto 16px; padding: 32px 24px; border-radius: 3px; }
-      #message h2 { color: #ffa100; font-weight: bold; font-size: 16px; margin: 0 0 8px; }
-      #message h1 { font-size: 22px; font-weight: 300; color: rgba(0,0,0,0.6); margin: 0 0 16px;}
-      #message p { line-height: 140%; margin: 16px 0 24px; font-size: 14px; }
-      #message a { display: block; text-align: center; background: #039be5; text-transform: uppercase; text-decoration: none; color: white; padding: 16px; border-radius: 4px; }
-      #message, #message a { box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24); }
-      #load { color: rgba(0,0,0,0.4); text-align: center; font-size: 13px; }
-      @media (max-width: 600px) {
-        body, #message { margin-top: 0; background: white; box-shadow: none; }
-        body { border-top: 16px solid #ffa100; }
-      }
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAVORA - AI Career Guidance</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%232563eb%22/><text y=%22.85em%22 x=%22.15em%22 font-size=%2270%22 fill=%22white%22 font-family=%22sans-serif%22 font-weight=%22bold%22>N</text></svg>">
+    <link href="output.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@0.577.0"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; color: #0f172a; margin: 0; overflow-x: hidden; }
+        .glass-panel { background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 1); box-shadow: 0 4px 30px rgba(0, 0, 0, 0.03); }
+        .glass-card { background: #ffffff; border: 1px solid #e2e8f0; box-shadow: 0 2px 10px -2px rgba(0, 0, 0, 0.02); transition: all 0.3s; }
+        .glass-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -6px rgba(0, 0, 0, 0.08); border-color: #cbd5e1; }
+        .tab-content { display: none; }
+        .tab-content.active { display: flex; flex-direction: column; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 1rem; border-radius: 0.75rem; transition: all 0.2s; font-weight: 600; cursor: pointer; color: #475569; margin-bottom: 0.5rem; font-size: 0.875rem;}
+        .nav-item:hover { background: #f8fafc; color: #1e293b; }
+        .nav-item.active { background: #2563eb; color: white; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+        .nav-item.active i { color: white; }
+        .full-terminal { height: 85vh !important; }
+        .terminal-collapsed { height: 12rem; }
+        #bot-terminal { transition: all 0.3s ease-in-out; }
     </style>
-  </head>
-  <body>
-    <div id="message">
-      <h2>Welcome</h2>
-      <h1>Firebase Hosting Setup Complete</h1>
-      <p>You're seeing this because you've successfully setup Firebase Hosting. Now it's time to go build something extraordinary!</p>
-      <a target="_blank" href="https://firebase.google.com/docs/hosting/">Open Hosting Documentation</a>
+</head>
+<body class="bg-slate-50 flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="w-72 glass-panel border-r border-slate-200 p-6 flex flex-col justify-between h-full bg-white/60 shrink-0 z-20">
+        <div>
+            <div class="flex items-center gap-3 mb-10">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white font-bold text-xl shadow-lg">N</div>
+                <h1 class="text-2xl font-bold tracking-tight text-slate-800">NAVORA</h1>
+            </div>
+            
+            <nav>
+                <div class="nav-item active" onclick="switchTab('dashboard')" id="nav-dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</div>
+                <div class="nav-item" onclick="switchTab('internships')" id="nav-internships"><i data-lucide="briefcase-business"></i> Live Internships</div>
+                <div class="nav-item" onclick="switchTab('trends')" id="nav-trends"><i data-lucide="trending-up"></i> Industry Trends</div>
+                <div class="nav-item" onclick="switchTab('roadmap')" id="nav-roadmap"><i data-lucide="map"></i> AI Roadmap</div>
+                <div class="nav-item" onclick="switchTab('profile')" id="nav-profile"><i data-lucide="user"></i> Profile Setup</div>
+                <div class="nav-item" onclick="switchTab('autobot')" id="nav-autobot"><i data-lucide="bot"></i> Auto-Applier</div>
+            </nav>
+        </div>
+        
+        <div class="p-4 bg-white rounded-xl border border-slate-100 flex items-center gap-3">
+            <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-500 font-bold">K</div>
+            <div class="flex-1 min-w-0">
+                <p class="text-sm font-bold text-slate-800 truncate">KATLA RISHI</p>
+                <p class="text-xs text-slate-500">Learner</p>
+            </div>
+        </div>
+    </aside>
+
+    <main class="flex-1 p-8 overflow-y-auto">
+        <!-- Dashboard Section -->
+        <section id="tab-dashboard" class="tab-content active h-full">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Welcome to your Career Hub</h2>
+                <p class="text-slate-500 text-lg">AI-powered guidance to bridge your skill gaps.</p>
+            </header>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white border border-slate-100 p-6 rounded-2xl flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="text-slate-500 font-medium text-sm mb-1">Profile Completeness</p>
+                        <h4 class="text-4xl font-bold text-slate-800" id="dash-completeness">100%</h4>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 flex items-center justify-center text-blue-500">
+                        <i data-lucide="target"></i>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-100 p-6 rounded-2xl flex justify-between items-center shadow-sm min-w-0">
+                    <div class="min-w-0 flex-1 pr-4">
+                        <p class="text-slate-500 font-medium text-sm mb-1">Target Role</p>
+                        <h4 class="text-lg font-bold text-slate-800 truncate" id="dash-role">Software Development Intern / E...</h4>
+                    </div>
+                    <div class="w-12 h-12 shrink-0 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-500">
+                        <i data-lucide="briefcase"></i>
+                    </div>
+                </div>
+                <div class="bg-white border border-slate-100 p-6 rounded-2xl flex justify-between items-center shadow-sm">
+                    <div>
+                        <p class="text-slate-500 font-medium text-sm mb-1">Total Skills</p>
+                        <h4 class="text-4xl font-bold text-slate-800" id="dash-skills-count">31</h4>
+                    </div>
+                    <div class="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-500">
+                        <i data-lucide="zap"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8 relative overflow-hidden rounded-2xl shadow-sm border border-slate-100 max-w-2xl bg-gradient-to-br from-indigo-50/50 to-purple-50/50 p-6 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                <!-- Decorative grid background -->
+                <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#4f46e5 1px, transparent 1px); background-size: 20px 20px;"></div>
+                
+                <div class="relative z-10 flex-1">
+                    <div class="flex items-center gap-1 text-[10px] uppercase tracking-widest font-bold text-blue-400 mb-2">
+                        <i data-lucide="sparkles" class="w-3 h-3 text-blue-400"></i> PREMIUM FEATURE
+                    </div>
+                    <p class="text-slate-400 text-sm leading-relaxed max-w-sm">Face a brutal Google Recruiter AI via real-time WebSockets to test your technical skills under pressure.</p>
+                </div>
+                <button class="relative z-10 px-5 py-2.5 bg-white text-slate-800 font-bold rounded-xl shadow-sm border border-slate-100 flex items-center gap-2 hover:bg-slate-50 transition w-max" onclick="openInterviewModal()">
+                    Start Simulator <i data-lucide="play" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="bg-white border border-slate-100 p-8 rounded-2xl flex-1 flex flex-col shadow-sm">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="sparkles" class="w-5 h-5 text-indigo-500"></i> AI Internship Recommendations</h3>
+                    <button class="px-4 py-2 bg-indigo-50/80 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition">Refresh Match</button>
+                </div>
+                <div id="recommendations-container" class="space-y-4">
+                    <p class="text-slate-500 text-sm">Complete your profile to unlock personalized AI matches.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Internships Section -->
+        <section id="tab-internships" class="tab-content h-full">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Live AICTE Internships</h2>
+                <p class="text-slate-500">Search real opportunities directly from the National Portal.</p>
+            </header>
+
+            <div class="mb-8">
+                <div class="flex gap-6 mb-6">
+                    <label class="flex items-center gap-2 cursor-pointer transition text-sm text-slate-600">
+                        <input type="radio" name="search_source" value="global" class="w-4 h-4 text-blue-600" onchange="toggleLocationInput()">
+                        <span>Global AI Search</span>
+                    </label>
+                    <label class="flex items-center gap-2 cursor-pointer transition text-sm text-slate-800 font-medium">
+                        <input type="radio" name="search_source" value="aicte" checked class="w-4 h-4 text-blue-600 focus:ring-blue-500" onchange="toggleLocationInput()">
+                        <span>AICTE National Portal</span>
+                    </label>
+                </div>
+
+                <div class="space-y-4 max-w-3xl">
+                    <div class="relative bg-slate-50 border border-slate-200 rounded-2xl flex items-center p-2 focus-within:ring-2 focus-within:ring-blue-500 focus-within:border-blue-500 transition">
+                        <i data-lucide="search" class="text-slate-400 w-5 h-5 ml-4"></i>
+                        <input type="text" id="search-query" placeholder="web development" class="flex-1 bg-transparent px-4 py-3 outline-none text-slate-800">
+                        <div class="flex gap-2">
+                            <button onclick="startSearch()" class="px-8 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition">Search</button>
+                            <button onclick="startSearch(true)" title="Force Refresh" class="p-3 bg-white border border-slate-200 text-slate-600 rounded-xl hover:bg-slate-50 transition shadow-sm flex items-center justify-center">
+                                <i data-lucide="refresh-cw" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div id="location-input-container" class="relative bg-slate-50 border border-slate-200 rounded-2xl flex items-center p-2 focus-within:ring-2 focus-within:border-blue-500 transition">
+                        <i data-lucide="map-pin" class="text-slate-400 w-5 h-5 ml-4"></i>
+                        <input type="text" id="search-location" placeholder="hyderabad" class="flex-1 bg-transparent px-4 py-3 outline-none text-slate-800">
+                    </div>
+                </div>
+            </div>
+
+            <div id="internship-results" class="grid grid-cols-1 md:grid-cols-2 gap-6 pb-20"></div>
+        </section>
+
+        <!-- Trends Section -->
+        <section id="tab-trends" class="tab-content h-full">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">Industry Trends</h2>
+                <p class="text-slate-500">See what skills are growing right now.</p>
+            </header>
+
+            <div class="bg-white border border-slate-100 p-8 rounded-2xl shadow-sm">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-50 pb-4">
+                    <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2"><i data-lucide="trending-up" class="w-5 h-5 text-indigo-500"></i> Market Analysis</h3>
+                    <button class="px-4 py-2 bg-indigo-50/80 text-indigo-600 rounded-lg text-sm font-semibold hover:bg-indigo-100 transition">Analyze Latest Data</button>
+                </div>
+                <div id="trends-container" class="grid grid-cols-1 md:grid-cols-2 gap-6"></div>
+            </div>
+        </section>
+
+        <!-- Roadmap Section -->
+        <section id="tab-roadmap" class="tab-content h-full">
+            <header class="mb-8">
+                <h2 class="text-3xl font-bold text-slate-800 mb-2">AI Career Roadmap</h2>
+                <p class="text-slate-500">Your personalized step-by-step path to your target role.</p>
+            </header>
+
+            <div class="bg-slate-50 border border-slate-200 p-2 rounded-2xl flex items-center mb-8 max-w-3xl focus-within:ring-2 focus-within:ring-blue-500">
+                <i data-lucide="target" class="w-5 h-5 text-slate-400 ml-4"></i>
+                <input type="text" id="roadmap-target" placeholder="Software Development Intern / Entry-level Developer" class="flex-1 bg-transparent px-4 py-3 outline-none text-slate-800">
+                <button onclick="generateRoadmap()" class="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md">Generate Path</button>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-2xl shadow-sm p-8 pb-20">
+                <h3 class="text-lg font-bold text-slate-800 flex items-center gap-2 mb-8"><i data-lucide="book-open" class="w-5 h-5 text-indigo-500"></i> Career Path</h3>
+                <div id="roadmap-container" class="space-y-6 relative ml-4">
+                    <!-- Timeline vertical line (added via CSS or injected in JS) -->
+                    <div class="absolute left-[-16px] top-4 bottom-0 w-px bg-blue-100 z-0"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Profile Section -->
+        <section id="tab-profile" class="tab-content h-full">
+            <h2 class="text-3xl font-bold text-slate-800 mb-6">Profile & Skill Sync</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold mb-4 flex items-center gap-2 text-slate-800"><i data-lucide="github" class="w-5 h-5"></i> GitHub Auto-Sync</h3>
+                    <p class="text-xs text-slate-500 mb-4">Analyzes your repos to verify technical skills.</p>
+                    <input type="text" id="github-username" placeholder="GitHub Username" class="w-full p-3 rounded-xl border mb-4 outline-none focus:border-blue-500">
+                    <button onclick="syncGithub()" class="w-full py-3 bg-slate-800 text-white font-bold rounded-xl hover:bg-black transition">Verify My GitHub</button>
+                </div>
+                <div class="glass-card p-6 rounded-2xl">
+                    <h3 class="font-bold mb-4 flex items-center gap-2 text-slate-800"><i data-lucide="linkedin" class="w-5 h-5"></i> LinkedIn Sync</h3>
+                    <p class="text-xs text-slate-500 mb-4">Parses your professional experience using AI.</p>
+                    <input type="text" id="linkedin-url" placeholder="LinkedIn Profile URL" class="w-full p-3 rounded-xl border mb-4 outline-none focus:border-blue-500">
+                    <button onclick="syncLinkedin()" class="w-full py-3 bg-[#0077b5] text-white font-bold rounded-xl hover:bg-[#005582] transition">Sync Experience</button>
+                </div>
+            </div>
+            <div class="bg-white border border-slate-100 p-0 rounded-2xl h-[550px] flex flex-col shadow-lg overflow-hidden relative">
+                <!-- Chat Header -->
+                <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between z-10 shadow-sm">
+                    <div class="flex items-center gap-3">
+                        <div class="relative">
+                            <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shadow-md">
+                                <i data-lucide="bot" class="w-5 h-5"></i>
+                            </div>
+                            <div class="absolute bottom-0 right-0 w-3 h-3 rounded-full bg-emerald-500 border-2 border-white"></div>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-800 text-[15px]">Navora Executive Coach</h3>
+                            <p class="text-[10px] uppercase tracking-wider font-bold text-emerald-600">Online & Ready</p>
+                        </div>
+                    </div>
+                    <button class="text-slate-400 hover:text-indigo-600 transition"><i data-lucide="more-horizontal" class="w-5 h-5"></i></button>
+                </div>
+                
+                <!-- Chat History -->
+                <div id="chat-history" class="flex-1 overflow-y-auto p-6 space-y-6 bg-slate-50/50">
+                    <!-- Initial Greeting -->
+                    <div class="flex items-start gap-3 w-full">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-1 shadow-sm">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div class="p-4 rounded-2xl rounded-tl-none bg-white border border-slate-200 shadow-sm text-slate-700 text-sm leading-relaxed max-w-[85%] font-medium">
+                            Greetings. I am your Navora Executive Coach. I am here to assist you in refining your professional background and accelerating your career goals. How may I be of service today?
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Input Area -->
+                <div class="p-4 bg-white border-t border-slate-100">
+                    <div id="file-preview" class="hidden mb-2 p-2 bg-indigo-50 border border-indigo-100 rounded-lg flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-4 h-4 text-indigo-600"></i>
+                            <span id="file-name" class="text-xs font-semibold text-indigo-700 truncate max-w-[200px]">resume.pdf</span>
+                        </div>
+                        <button onclick="clearFile()" class="text-indigo-400 hover:text-red-500">✕</button>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-xl p-2 focus-within:ring-2 focus-within:ring-indigo-500 focus-within:border-indigo-500 transition shadow-inner">
+                        <input type="file" id="resume-upload" class="hidden" accept=".pdf,.jpg,.jpeg,.png" onchange="handleFileSelect(event)">
+                        <button onclick="document.getElementById('resume-upload').click()" class="p-2 text-slate-400 hover:text-indigo-600 transition"><i data-lucide="paperclip" class="w-5 h-5"></i></button>
+                        <input type="text" id="chat-input" class="flex-1 bg-transparent border-none outline-none text-sm text-slate-800 px-2" placeholder="Detail your experience or upload resume..." onkeypress="handleChatEnter(event)">
+                        <button onclick="sendChatMessage()" class="p-2 bg-indigo-600 text-white rounded-lg shadow-md hover:bg-indigo-700 transition flex items-center justify-center min-w-[40px]"><i data-lucide="send" class="w-4 h-4"></i></button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Autobot Section -->
+        <section id="tab-autobot" class="tab-content h-full">
+            <header class="mb-8 flex items-center gap-4">
+                <div class="w-12 h-12 bg-emerald-500 text-white rounded-xl flex items-center justify-center">
+                    <i data-lucide="bot" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold text-slate-800 mb-1">Autopilot Auto-Applier</h2>
+                    <p class="text-slate-500">Set it and forget it — Navora applies to hundreds of jobs while you sleep.</p>
+                </div>
+            </header>
+
+            <div class="bg-white border border-slate-100 rounded-2xl p-6 shadow-sm mb-6">
+                <h3 class="font-bold text-slate-800 flex items-center gap-2 mb-6"><i data-lucide="settings" class="w-5 h-5 text-emerald-500"></i> Bot Configuration</h3>
+                <div class="space-y-4 max-w-3xl">
+                    <label class="block text-sm font-medium text-slate-600">Target Role</label>
+                    <div class="flex gap-4">
+                        <input type="text" id="bot-target-role" placeholder="Software Engineer Intern" class="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 outline-none focus:border-emerald-500">
+                        <button id="autobot-test-btn" onclick="startAutoBot(true)" class="px-6 py-3 bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold rounded-xl shadow-sm flex items-center gap-2 transition"><i data-lucide="flask-conical" class="w-4 h-4 text-indigo-500"></i> Test Simulator</button>
+                        <button id="autobot-live-btn" onclick="startAutoBot(false)" class="px-6 py-3 bg-emerald-600 text-white font-bold rounded-xl shadow-md hover:bg-emerald-700 flex items-center gap-2 transition">Launch Auto-Applier <i data-lucide="rocket" class="w-4 h-4"></i></button>
+                    </div>
+                    <div class="flex items-center gap-2 text-xs font-semibold text-emerald-600 mt-2">
+                        <span class="text-slate-500 font-medium">Bot Status: <span class="text-slate-800 font-bold">RUNNING</span></span>
+                        <div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                        Running in background...
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div class="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
+                    <h4 id="stats-applied" class="text-3xl font-bold text-emerald-600">0</h4>
+                    <p class="text-xs text-slate-500 mt-1 font-medium">Applications Sent</p>
+                </div>
+                <div class="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
+                    <h4 id="stats-jobs" class="text-3xl font-bold text-indigo-600">0</h4>
+                    <p class="text-xs text-slate-500 mt-1 font-medium">Jobs Found</p>
+                </div>
+                <div class="bg-white border border-slate-100 p-6 rounded-2xl text-center shadow-sm">
+                    <h4 id="stats-cv" class="text-3xl font-bold text-orange-500">0</h4>
+                    <p class="text-xs text-slate-500 mt-1 font-medium">Custom CVs Generated</p>
+                </div>
+            </div>
+
+            <div class="rounded-xl overflow-hidden shadow-sm border border-slate-800 mb-6 bg-slate-900">
+                <div class="bg-black/40 px-4 py-3 border-b border-white/10 flex justify-between items-center text-xs text-slate-400 font-mono">
+                    <div class="flex items-center gap-2">
+                        <div class="flex gap-1.5">
+                            <div class="w-3 h-3 rounded-full bg-red-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                        </div>
+                        <span class="ml-2 content-center text-slate-500">navora-autopilot -- bash</span>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div id="terminal-mode-badge" class="flex items-center gap-2 text-emerald-500 font-bold tracking-widest"><div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> LIVE</div>
+                        <button onclick="toggleTerminalSize()" class="bg-amber-500/10 text-amber-500 text-[11px] font-black uppercase tracking-widest px-4 py-2 rounded-lg border-2 border-amber-500 hover:bg-amber-500 hover:text-slate-900 transition flex items-center gap-2 shadow-[0_0_15px_rgba(245,158,11,0.3)] animate-pulse">
+                            <i data-lucide="terminal" class="w-4 h-4"></i> <span id="terminal-expand-text">Expand Bash View</span> <i data-lucide="maximize-2" id="terminal-expand-icon" class="w-3 h-3"></i>
+                        </button>
+                    </div>
+                </div>
+                <div id="bot-terminal" class="p-4 font-mono text-[13px] text-slate-300 terminal-collapsed overflow-y-auto space-y-2">
+                </div>
+            </div>
+
+            <div class="bg-white border border-slate-100 rounded-2xl shadow-sm pb-10">
+                <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-2xl">
+                    <h3 class="font-bold text-slate-800 flex items-center gap-2 text-sm"><i data-lucide="archive" class="w-4 h-4 text-indigo-500"></i> Applications Log <span id="app-log-count" class="bg-indigo-50 text-indigo-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">0 saved</span></h3>
+                    <button onclick="loadApplications()" class="text-xs text-indigo-600 font-semibold flex items-center gap-1 hover:text-indigo-800 transition"><i data-lucide="refresh-cw" class="w-3 h-3"></i> Refresh</button>
+                </div>
+                <div class="p-6" id="applications-log">
+                    <div class="text-center text-slate-400 py-10 font-bold animate-pulse text-sm">Loading applications...</div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Interview Modal -->
+    <div id="interview-modal" class="fixed inset-0 z-50 bg-slate-900 hidden flex-col">
+        <!-- Top Bar -->
+        <div class="h-14 bg-slate-800 border-b border-slate-700 flex items-center justify-between px-6">
+            <div class="flex items-center gap-3 text-white">
+                <i data-lucide="video" class="w-5 h-5 text-blue-400"></i>
+                <span class="font-bold text-sm">Google Technical Interview</span>
+                <span class="bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded ml-2 animate-pulse">REC</span>
+            </div>
+            <div id="interview-timer" class="text-slate-300 font-mono text-sm">45:00</div>
+            <button onclick="closeInterviewModal()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-1.5 rounded-lg text-sm font-bold transition">End Call</button>
+        </div>
+
+        <div class="flex flex-1 overflow-hidden">
+            <!-- Left: Communication Panel (Webcam + Chat) -->
+            <div class="w-[400px] bg-slate-800 border-r border-slate-700 flex flex-col">
+                <!-- Video feeds -->
+                <div class="p-4 space-y-4">
+                    <!-- AI Profile -->
+                    <div class="aspect-video bg-slate-700 rounded-xl overflow-hidden relative shadow-lg">
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-3xl text-white font-bold">G</div>
+                        </div>
+                        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">Interviewer (Google)</div>
+                    </div>
+                    <!-- User Webcam -->
+                    <div class="aspect-video bg-black rounded-xl overflow-hidden relative shadow-lg ring-2 ring-slate-600">
+                        <video id="webcam-feed" autoplay playsinline class="w-full h-full object-cover scale-x-[-1]"></video>
+                        <div class="absolute bottom-2 left-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">You</div>
+                    </div>
+                </div>
+                
+                <!-- Chat / Transcript -->
+                <div class="flex-1 flex flex-col bg-slate-900 border-t border-slate-700 overflow-hidden">
+                    <div class="p-3 bg-slate-800 border-b border-slate-700 text-xs font-bold text-slate-400 uppercase tracking-wider">Live Transcript</div>
+                    <div id="interview-transcript" class="flex-1 overflow-y-auto p-4 space-y-4">
+                        <!-- Messages go here -->
+                    </div>
+                    <div class="p-3 bg-slate-800">
+                        <div class="flex gap-2">
+                            <input type="text" id="interview-chat-input" class="flex-1 bg-slate-700 text-white text-sm rounded-lg px-3 py-2 outline-none focus:ring-1 focus:ring-blue-500" placeholder="Type to speak..." onkeypress="if(event.key==='Enter') sendInterviewMessage()">
+                            <button onclick="sendInterviewMessage()" class="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700"><i data-lucide="send" class="w-4 h-4"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Collaborative Code Editor -->
+            <div class="flex-1 flex flex-col bg-[#1e1e1e]">
+                <div class="h-10 bg-[#2d2d2d] flex items-center px-4 border-b border-[#3d3d3d]">
+                    <div class="flex gap-2">
+                        <div class="px-3 py-1 bg-[#1e1e1e] text-slate-300 text-xs font-mono border-t-2 border-blue-500">solution.py</div>
+                    </div>
+                    <div class="ml-auto text-xs text-slate-400 flex items-center gap-2"><i data-lucide="users" class="w-3 h-3"></i> Collaborative Whiteboard Active</div>
+                </div>
+                <div class="flex-1 relative">
+                    <!-- Simple textarea acting as code editor -->
+                    <textarea id="interview-code-editor" class="absolute inset-0 w-full h-full bg-[#1e1e1e] text-[#d4d4d4] p-4 font-mono text-[14px] leading-relaxed outline-none resize-none" spellcheck="false" placeholder="# Write your code here. The interviewer can see this live."></textarea>
+                </div>
+                <!-- Output Console -->
+                <div class="h-48 border-t border-[#3d3d3d] bg-[#1e1e1e] flex flex-col">
+                    <div class="h-8 bg-[#2d2d2d] flex items-center px-4">
+                        <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Whiteboard Output / Notes</span>
+                    </div>
+                    <textarea id="interview-notes" class="flex-1 bg-transparent text-slate-400 p-3 font-mono text-xs outline-none resize-none" placeholder="Scratchpad for notes, complexities, etc."></textarea>
+                </div>
+            </div>
+        </div>
     </div>
-    <p id="load">Firebase SDK Loading&hellip;</p>
 
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        const loadEl = document.querySelector('#load');
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
-        // // The Firebase SDK is initialized and available here!
-        //
-        // firebase.auth().onAuthStateChanged(user => { });
-        // firebase.database().ref('/path/to/ref').on('value', snapshot => { });
-        // firebase.firestore().doc('/foo/bar').get().then(() => { });
-        // firebase.functions().httpsCallable('yourFunction')().then(() => { });
-        // firebase.messaging().requestPermission().then(() => { });
-        // firebase.storage().ref('/path/to/ref').getDownloadURL().then(() => { });
-        // firebase.analytics(); // call to activate
-        // firebase.analytics().logEvent('tutorial_completed');
-        // firebase.performance(); // call to activate
-        //
-        // // 🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥🔥
+    <!-- Firebase SDKs -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        try {
-          let app = firebase.app();
-          let features = [
-            'auth', 
-            'database', 
-            'firestore',
-            'functions',
-            'messaging', 
-            'storage', 
-            'analytics', 
-            'remoteConfig',
-            'performance',
-          ].filter(feature => typeof app[feature] === 'function');
-          loadEl.textContent = `Firebase SDK loaded with ${features.join(', ')}`;
-        } catch (e) {
-          console.error(e);
-          loadEl.textContent = 'Error loading the Firebase SDK, check the console.';
+        const firebaseConfig = {
+          apiKey: "AIzaSyDDFiZ2OAahWHNSxJWa7PFAzdHAEVf5lCc",
+          authDomain: "navora-a5c62.firebaseapp.com",
+          projectId: "navora-a5c62",
+          storageBucket: "navora-a5c62.firebasestorage.app",
+          messagingSenderId: "970616609774",
+          appId: "1:970616609774:web:e95117aac44c85415c8cff",
+          measurementId: "G-380697P1Y8"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        onAuthStateChanged(auth, (user) => {
+            const isBypass = localStorage.getItem('navora_bypass') === 'true';
+            
+            if (!user && !isBypass) {
+                window.location.href = "/login";
+            } else {
+                console.log("Authenticated as:", user ? user.email : "Guest (Bypass)");
+                // Update UI with user info
+                const userInitial = user ? user.email.charAt(0).toUpperCase() : 'G';
+                const userName = user ? (user.displayName || user.email.split('@')[0].toUpperCase()) : 'GUEST DEVELOPER';
+                
+                const profileInitialEl = document.querySelector('aside div.bg-slate-100.flex.items-center.justify-center');
+                if (profileInitialEl) profileInitialEl.innerText = userInitial;
+                
+                const profileNameEl = document.querySelector('aside p.text-sm.font-bold.truncate');
+                if (profileNameEl) profileNameEl.innerText = userName;
+            }
+        });
+
+        window.logout = () => {
+            localStorage.removeItem('navora_bypass');
+            signOut(auth).then(() => {
+                window.location.href = "/login";
+            });
+        };
+
+        // --- GLOBAL CONFIG ---
+        const RENDER_URL = ""; // Empty string forces browser to use the current host (127.0.0.1:5001)
+        const socket = io();
+        let chatHistory = [
+            {role:'model', text: "Greetings. I am your Navora Executive Coach. I am here to assist you in refining your professional background and accelerating your career goals. How may I be of service today?"}
+        ];
+        let stream = null;
+
+        // --- NAVIGATION ---
+        window.switchTab = function(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`nav-${tabId}`).classList.add('active');
+            
+            if(tabId === 'dashboard') loadProfile();
+            if(tabId === 'trends') loadTrends();
+            lucide.createIcons();
         }
-      });
+
+        // --- DASHBOARD & PROFILE ---
+        async function loadProfile() {
+            try {
+                const res = await fetch(`${RENDER_URL}/api/profile`);
+                const data = await res.json();
+                document.getElementById('dash-completeness').innerText = (data.completeness || 0) + '%';
+                document.getElementById('dash-role').innerText = data.target_role || 'Not set';
+                document.getElementById('dash-skills-count').innerText = (data.skills || []).length;
+                
+                // Recommendations
+                const recContainer = document.getElementById('recommendations-container');
+                const recRes = await fetch(`${RENDER_URL}/api/recommendations`);
+                const recData = await recRes.json();
+                if(recData.internships) {
+                    recContainer.innerHTML = recData.internships.map(i => `
+                        <div class="bg-white border border-slate-100 p-4 rounded-xl flex justify-between items-center hover:bg-slate-50 transition shadow-sm">
+                            <div><p class="font-bold text-slate-800 text-sm">${i.role}</p><p class="text-xs text-slate-500">${i.company}</p></div>
+                            <span class="text-indigo-600 font-bold bg-indigo-50 px-3 py-1 rounded text-[10px]">${i.match_score}% Match</span>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) { console.error("Profile load failed", e); }
+        }
+
+        // --- INTERNSHIPS (AICTE & GLOBAL) ---
+        window.toggleLocationInput = function() {
+            const source = document.querySelector('input[name="search_source"]:checked').value;
+            document.getElementById('location-input-container').style.display = source === 'aicte' ? 'block' : 'none';
+        }
+
+        window.startSearch = async function(forceRefresh = false) {
+            const query = document.getElementById('search-query').value;
+            const location = document.getElementById('search-location').value;
+            const source = document.querySelector('input[name="search_source"]:checked').value;
+            const resultsDiv = document.getElementById('internship-results');
+            
+            resultsDiv.innerHTML = `<div class="col-span-full text-center py-20">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-4"></div>
+                <p class="text-indigo-500 font-bold font-mono tracking-tighter">
+                    ${forceRefresh ? 'BYPASSING CACHE & SCRAPING LIVE...' : 'GEMINI IS SUMMARIZING LIVE OPPORTUNITIES...'}
+                </p>
+            </div>`;
+            
+            try {
+                const res = await fetch(`${RENDER_URL}/api/internships/search?query=${encodeURIComponent(query)}&source=${source}&location=${encodeURIComponent(location)}&refresh=${forceRefresh}`);
+                const data = await res.json();
+                
+                resultsDiv.innerHTML = data.results.map(j => `
+                    <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm flex flex-col justify-between hover:border-blue-200 transition">
+                        <div>
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-base text-slate-800 uppercase">${j.title}</h4>
+                                <span class="bg-orange-50 text-orange-600 text-[10px] font-bold px-2 py-0.5 rounded uppercase ml-2 shrink-0">${source === 'aicte' ? 'AICTE' : 'GLOBAL'}</span>
+                            </div>
+                            <p class="text-slate-500 text-sm mb-3">${j.company}</p>
+                            
+                            <div class="bg-slate-50 rounded-xl p-3 mb-4 border border-slate-100">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1 flex items-center gap-1"><i data-lucide="sparkles" class="w-3 h-3 text-blue-500"></i> Gemini AI Brief</p>
+                                <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">${j.summary || 'Click apply to view full details of this opportunity.'}</p>
+                            </div>
+
+                            <div class="text-[11px] text-slate-400 mb-5 flex items-center gap-1 font-medium"><i data-lucide="map-pin" class="w-3 h-3 text-slate-400 min-w-3"></i> <span>${j.attributes || j.location || 'Remote/Flexible'}</span></div>
+                        </div>
+                        <a href="${j.link}" target="_blank" class="block w-full py-2.5 bg-slate-800 text-white text-center rounded-xl font-bold text-sm hover:bg-black transition shadow-sm">Apply via ${source.toUpperCase()}</a>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            } catch(e) { 
+                resultsDiv.innerHTML = `<div class="col-span-full text-center py-20 text-red-500 font-bold bg-red-50 rounded-2xl border border-red-100 p-8">
+                    <i data-lucide="alert-circle" class="w-10 h-10 mx-auto mb-4 text-red-400"></i>
+                    <p>Search error. Please try again.</p>
+                    <p class="text-xs font-normal mt-2">${e.message}</p>
+                </div>`; 
+                lucide.createIcons();
+            }
+        }
+
+        // --- TRENDS & ROADMAP ---
+        async function loadTrends() {
+            const container = document.getElementById('trends-container');
+            container.innerHTML = '<p class="text-slate-400 animate-pulse col-span-full">Analyzing market trends...</p>';
+            try {
+                const res = await fetch(`${RENDER_URL}/api/trends`);
+                const data = await res.json();
+                container.innerHTML = data.trending.map((t, idx) => `
+                    <div class="bg-white border border-slate-100 p-6 rounded-2xl shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <h4 class="font-bold text-slate-800 text-sm overflow-hidden text-ellipsis whitespace-nowrap">${t.skill}</h4>
+                            <span class="bg-emerald-50 text-emerald-600 font-bold px-2 py-0.5 rounded text-[10px] shrink-0 pl-1">${t.growth} Growth</span>
+                        </div>
+                        <p class="text-xs text-slate-400 flex items-center gap-1">${idx % 2 === 0 ? '<span class="text-slate-400">○ Recommended to learn</span>' : '<span class="text-emerald-500 font-bold">✓</span> <span class="text-emerald-600 font-medium tracking-tight">You have this skill</span>'}</p>
+                    </div>
+                `).join('');
+            } catch(e) { console.error(e); }
+        }
+
+        window.generateRoadmap = async function() {
+            const target = document.getElementById('roadmap-target').value;
+            const container = document.getElementById('roadmap-container');
+            if(!target) return alert("Enter a target goal");
+            container.innerHTML = '<p class="text-center py-10 font-bold text-blue-600 animate-bounce col-span-full">GEMINI AI IS ARCHITECTING YOUR JOURNEY...</p>';
+            try {
+                const res = await fetch(`${RENDER_URL}/api/roadmap?target=${encodeURIComponent(target)}`);
+                const data = await res.json();
+                container.innerHTML = '<div class="absolute left-[-16px] top-4 bottom-0 w-px bg-slate-200 z-0 hidden md:block"></div>' + data.roadmap.map((step, idx) => `
+                    <div class="relative bg-white border border-slate-100 p-6 rounded-2xl shadow-sm mb-6 ml-0 md:ml-4 flex-1">
+                        <!-- Timeline Dot -->
+                        <div class="hidden md:block absolute -left-[24px] top-6 w-3 h-3 rounded-full bg-indigo-500 border-2 border-white shadow-sm z-10"></div>
+                        <div class="flex justify-between items-start mb-3">
+                            <h4 class="font-bold text-slate-800 text-sm">Step ${idx+1}: ${step.title}</h4>
+                            <span class="bg-blue-50 text-blue-600 text-[10px] font-bold px-2.5 py-1 rounded shrink-0 ml-2">${step.duration}</span>
+                        </div>
+                        <p class="text-slate-500 text-xs leading-relaxed">${step.description}</p>
+                    </div>
+                `).join('');
+                lucide.createIcons();
+            } catch(e) { container.innerHTML = '<p class="text-red-500">Failed to generate roadmap.</p>'; }
+        }
+
+        // --- SOCIAL SYNC (GITHUB / LINKEDIN) ---
+        window.syncGithub = async function() {
+            const username = document.getElementById('github-username').value;
+            if(!username) return alert("Enter GitHub username");
+            appendMessage('assistant', `Analyzing public repositories for user: ${username}...`);
+            const res = await fetch(`${RENDER_URL}/api/profile/github`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({username}) });
+            const data = await res.json();
+            if(data.status === 'success') {
+                appendMessage('assistant', `Sync Complete! Verified Skills: ${data.summary}`);
+                loadProfile();
+            }
+        }
+
+        window.syncLinkedin = async function() {
+            const url = document.getElementById('linkedin-url').value;
+            if(!url) return alert("Enter LinkedIn Profile URL");
+            appendMessage('assistant', "Extracting professional background via God-Level AI Scraper...");
+            const res = await fetch(`${RENDER_URL}/api/profile/linkedin`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({linkedin_url: url}) });
+            const data = await res.json();
+            if(data.status === 'success') {
+                appendMessage('assistant', `LinkedIn Sync Success! We found matches for: ${data.summary}`);
+                loadProfile();
+            }
+        }
+
+        window.handleChatEnter = function(event) {
+            if (event.key === 'Enter') {
+                sendChatMessage();
+            }
+        }
+
+        // --- CHAT ---
+        let selectedFile = null;
+
+        window.handleFileSelect = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            selectedFile = file;
+            document.getElementById('file-preview').classList.remove('hidden');
+            document.getElementById('file-name').innerText = file.name;
+            lucide.createIcons();
+        }
+
+        window.clearFile = function() {
+            selectedFile = null;
+            document.getElementById('resume-upload').value = '';
+            document.getElementById('file-preview').classList.add('hidden');
+        }
+
+        window.sendChatMessage = async function() {
+            const input = document.getElementById('chat-input');
+            const text = input.value.trim();
+            if(!text && !selectedFile) return;
+            
+            const fileData = selectedFile;
+            input.value = '';
+            
+            const displayMessage = text + (fileData ? `<br><span class="text-[10px] opacity-70 italic flex items-center gap-1 mt-1"><i data-lucide="file-text" class="w-3 h-3"></i> Attached: ${fileData.name}</span>` : '');
+            appendMessage('user', displayMessage);
+            
+            // Add typing indicator
+            const container = document.getElementById('chat-history');
+            const typingId = 'typing-' + Date.now();
+            container.innerHTML += `
+                <div id="${typingId}" class="flex items-start gap-3 w-full">
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-1 shadow-sm">
+                        <i data-lucide="bot" class="w-4 h-4"></i>
+                    </div>
+                    <div class="p-4 rounded-2xl rounded-tl-none bg-white border border-slate-200 shadow-sm text-slate-400 text-sm flex items-center gap-1 cursor-default">
+                        <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0s"></div>
+                        <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.15s"></div>
+                        <div class="w-1.5 h-1.5 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.3s"></div>
+                    </div>
+                </div>
+            `;
+            lucide.createIcons();
+            container.scrollTop = container.scrollHeight;
+
+            let file_base64 = null;
+            if (fileData) {
+                file_base64 = await new Promise((resolve) => {
+                    const reader = new FileReader();
+                    reader.onload = (e) => resolve(e.target.result.split(',')[1]);
+                    reader.readAsDataURL(fileData);
+                });
+            }
+
+            try {
+                const res = await fetch(`${RENDER_URL}/api/profile/chat`, { 
+                    method: 'POST', 
+                    headers: {'Content-Type': 'application/json'}, 
+                    body: JSON.stringify({ 
+                        text, 
+                        history: chatHistory,
+                        file_data: file_base64,
+                        file_mime: fileData ? fileData.type : null
+                    }) 
+                });
+                const data = await res.json();
+                
+                // Remove typing indicator
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+                
+                clearFile();
+                appendMessage('assistant', data.reply);
+                chatHistory.push({role:'user', text}, {role:'model', text: data.reply});
+                loadProfile(); 
+            } catch (e) {
+                const typingEl = document.getElementById(typingId);
+                if(typingEl) typingEl.remove();
+                appendMessage('assistant', "I apologize, but I encountered an error processing your request. Please try again.");
+            }
+        }
+
+        function appendMessage(role, text) {
+            const container = document.getElementById('chat-history');
+            let messageHtml = '';
+            
+            // Convert simple markdown bolding to HTML
+            text = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            if (role === 'user') {
+                messageHtml = `
+                    <div class="flex flex-col items-end w-full">
+                        <div class="p-4 rounded-2xl rounded-tr-none bg-indigo-600 text-white shadow-md text-sm leading-relaxed max-w-[85%] font-medium inline-block">
+                            ${text}
+                        </div>
+                    </div>
+                `;
+            } else {
+                messageHtml = `
+                    <div class="flex items-start gap-3 w-full animate-[fadeIn_0.3s_ease]">
+                        <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-600 to-purple-600 flex items-center justify-center text-white shrink-0 mt-1 shadow-sm">
+                            <i data-lucide="bot" class="w-4 h-4"></i>
+                        </div>
+                        <div class="p-4 rounded-2xl rounded-tl-none bg-white border border-slate-200 shadow-sm text-slate-700 text-sm leading-relaxed max-w-[85%] font-medium">
+                            ${text}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            container.innerHTML += messageHtml;
+            lucide.createIcons();
+            container.scrollTop = container.scrollHeight;
+        }
+
+        // --- AUTOBOT ---
+        window.startAutoBot = async function(isTestMode = true) {
+            const role = document.getElementById('bot-target-role').value;
+            if(!role) return alert("Enter a target role for Autopilot");
+            
+            const liveBtn = document.getElementById('autobot-live-btn');
+            const testBtn = document.getElementById('autobot-test-btn');
+            const badge = document.getElementById('terminal-mode-badge');
+            
+            if (isTestMode) {
+                testBtn.innerHTML = `Simulating... <i data-lucide="settings" class="w-4 h-4 animate-spin-slow text-indigo-500"></i>`;
+                badge.innerHTML = `<div class="w-2 h-2 rounded-full bg-indigo-500 animate-pulse"></div> TEST`;
+                badge.className = "flex items-center gap-2 text-indigo-500 font-bold tracking-widest";
+            } else {
+                liveBtn.innerHTML = `Running Live... <i data-lucide="settings" class="w-4 h-4 animate-spin-slow"></i>`;
+                badge.innerHTML = `<div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div> LIVE`;
+                badge.className = "flex items-center gap-2 text-emerald-500 font-bold tracking-widest";
+            }
+            
+            lucide.createIcons();
+            
+            await fetch(`${RENDER_URL}/api/bot/auto-apply`, { 
+                method: 'POST', 
+                headers: {'Content-Type': 'application/json'}, 
+                body: JSON.stringify({target_role: role, test_mode: isTestMode}) 
+            });
+            document.getElementById('bot-terminal').innerHTML = `<div class="text-indigo-400 mt-2 font-bold mb-2">>>> Launching in ${isTestMode ? 'TEST MODE' : 'LIVE MODE'} for: ${role}</div>`;
+        }
+
+        socket.on('bot_log', (data) => {
+            const terminal = document.getElementById('bot-terminal');
+            terminal.innerHTML += `<div class="mb-1">[${new Date().toLocaleTimeString()}] ${data.message}</div>`;
+            terminal.scrollTop = terminal.scrollHeight;
+        });
+
+        socket.on('bot_stats', (data) => {
+            document.getElementById('stats-jobs').innerText = data.jobs;
+            document.getElementById('stats-applied').innerText = data.applied;
+            document.getElementById('stats-cv').innerText = data.cv;
+        });
+
+        socket.on('bot_status', (data) => {
+            if (data.status === 'IDLE' || data.status === 'CRASHED') {
+                const liveBtn = document.getElementById('autobot-live-btn');
+                const testBtn = document.getElementById('autobot-test-btn');
+                
+                liveBtn.innerHTML = `Launch Auto-Applier <i data-lucide="rocket" class="w-4 h-4"></i>`;
+                testBtn.innerHTML = `<i data-lucide="flask-conical" class="w-4 h-4 text-indigo-500"></i> Test Simulator`;
+                lucide.createIcons();
+                
+                if (data.status === 'IDLE') {
+                    startAutoBot.completed = true;
+                    loadApplications(); // Auto update application logs when bot succeeds!
+                }
+            }
+        });
+
+        window.toggleTerminalSize = function() {
+            const terminal = document.getElementById('bot-terminal');
+            const icon = document.getElementById('terminal-expand-icon');
+            const text = document.getElementById('terminal-expand-text');
+            const isExpanding = !terminal.classList.contains('full-terminal');
+            
+            terminal.classList.toggle('full-terminal');
+            
+            if (isExpanding) {
+                icon.setAttribute('data-lucide', 'minimize-2');
+                text.innerText = "Close Bash View";
+            } else {
+                icon.setAttribute('data-lucide', 'maximize-2');
+                text.innerText = "Expand Bash View";
+            }
+            lucide.createIcons();
+            terminal.scrollTop = terminal.scrollHeight;
+        }
+
+        async function loadApplications() {
+            try {
+                document.getElementById('applications-log').innerHTML = '<div class="text-center text-slate-400 py-10 font-bold animate-pulse text-sm">Loading applications...</div>';
+                const res = await fetch('/api/applications');
+                const data = await res.json();
+                const apps = data.applications || [];
+                
+                document.getElementById('app-log-count').innerText = `${apps.length} saved`;
+                
+                if (apps.length === 0) {
+                    document.getElementById('applications-log').innerHTML = '<div class="text-center text-slate-400 py-10 font-bold text-sm">No applications recorded yet. Run the Autopilot to get started!</div>';
+                    return;
+                }
+                
+                document.getElementById('applications-log').innerHTML = apps.map((app, i) => {
+                    let badgeClass = "bg-emerald-50 text-emerald-600";
+                    if(app.status.includes('TEST')) badgeClass = "bg-indigo-50 text-indigo-600";
+                    if(app.status.includes('Review') || app.status.includes('Draft')) badgeClass = "bg-amber-50 text-amber-600";
+                    
+                    return `
+                    <div class="border-l-2 border-slate-200 pl-6 relative ${i > 0 ? 'mt-10' : ''}">
+                        <div class="absolute w-3 h-3 bg-slate-200 rounded-full -left-[7px] top-1.5 border-2 border-white"></div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <h4 class="font-bold text-slate-800 text-sm">${app.company || 'Unknown Company'}</h4>
+                            <span class="${badgeClass} text-[10px] font-bold px-2 py-0.5 rounded uppercase">${app.status || 'Generated'}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 font-medium mb-3 flex items-center gap-2"><i data-lucide="briefcase" class="w-3 h-3"></i> ${app.role} • <i data-lucide="clock" class="w-3 h-3"></i> ${new Date(app.created_at).toLocaleString()}</div>
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-xl text-slate-600 text-xs italic mb-4">"${app.cover_letter || 'No custom letter generated.'}"</div>
+                        <div class="flex gap-4">
+                            <button class="text-indigo-600 font-bold text-xs flex items-center gap-1 hover:text-indigo-800 transition"><i data-lucide="copy" class="w-3 h-3"></i> Copy Letter</button>
+                            ${app.job_url ? `<a href="${app.job_url}" target="_blank" class="text-emerald-600 font-bold text-xs flex items-center gap-1 hover:text-emerald-800 transition"><i data-lucide="external-link" class="w-3 h-3"></i> View Job</a>` : ''}
+                            <button class="text-red-400 font-bold text-xs flex items-center gap-1 ml-auto hover:text-red-600 transition"><i data-lucide="trash-2" class="w-3 h-3"></i> Delete</button>
+                        </div>
+                    </div>`
+                }).join('');
+                lucide.createIcons();
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        // --- INTERVIEW SIMULATOR (LIVE COLLABORATIVE ENVIRO) ---
+        let interviewHistory = [];
+        let interviewTimer = null;
+        let timeRemaining = 2700; // 45 minutes
+
+        window.openInterviewModal = async function() {
+            document.getElementById('interview-modal').style.display = 'flex';
+            document.getElementById('interview-transcript').innerHTML = '';
+            document.getElementById('interview-code-editor').value = '';
+            interviewHistory = [];
+            
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                document.getElementById('webcam-feed').srcObject = stream;
+            } catch (err) { console.log("Webcam access denied."); }
+            
+            startInterviewTimer(45 * 60);
+            socket.emit('start_interview', {});
+        }
+
+        window.closeInterviewModal = function() {
+            if (confirm("Warning: Leaving the interview room will end the assessment. Proceed?")) {
+                document.getElementById('interview-modal').style.display = 'none';
+                clearInterval(interviewTimer);
+                if(stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+            }
+        }
+
+        window.sendInterviewMessage = function() {
+            const input = document.getElementById('interview-chat-input');
+            const msg = input.value.trim();
+            const code = document.getElementById('interview-code-editor').value;
+            
+            if(!msg && !code) return;
+            
+            if(msg) {
+                appendInterviewMsg('user', msg);
+                interviewHistory.push({role: 'user', text: msg});
+                input.value = '';
+            } else {
+                appendInterviewMsg('user', '<span class="text-xs italic">Updated code on whiteboard.</span>');
+                interviewHistory.push({role: 'user', text: 'I updated the code.'});
+            }
+            
+            socket.emit('interview_message', { message: msg, code: code, history: interviewHistory });
+        }
+
+        socket.on('interview_stream', (data) => {
+            if (data.speaker === 'system') {
+                const t = document.getElementById('interview-transcript');
+                const loader = document.getElementById('ai-typing');
+                if(loader) loader.remove();
+                t.innerHTML += `<div class="text-[10px] text-slate-500 italic text-center my-2" id="${data.text.includes('evaluating') ? 'ai-typing' : ''}">${data.text}</div>`;
+                t.scrollTop = t.scrollHeight;
+            } else if (data.speaker === 'ai') {
+                const loader = document.getElementById('ai-typing');
+                if(loader) loader.remove();
+                
+                // Format text to look nice
+                let htmlText = data.text
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/```([\s\S]*?)```/g, '<pre class="bg-slate-800 p-2 rounded-lg mt-2 mb-2 overflow-x-auto text-[10px] font-mono text-slate-300 border border-slate-700"><code>$1</code></pre>');
+                
+                appendInterviewMsg('ai', htmlText);
+                interviewHistory.push({role: 'model', text: data.text});
+            }
+        });
+
+        function appendInterviewMsg(role, html) {
+            const t = document.getElementById('interview-transcript');
+            if (role === 'user') {
+                t.innerHTML += `<div class="bg-blue-600 text-white text-sm p-3 rounded-xl rounded-br-sm ml-auto max-w-[85%] mb-3 shadow-sm leading-relaxed">${html}</div>`;
+            } else {
+                t.innerHTML += `<div class="bg-slate-700 text-slate-100 text-sm p-3 rounded-xl rounded-bl-sm mr-auto max-w-[95%] mb-3 shadow-sm leading-relaxed">${html}</div>`;
+            }
+            t.scrollTop = t.scrollHeight;
+        }
+
+        function startInterviewTimer(seconds) {
+            timeRemaining = seconds;
+            clearInterval(interviewTimer);
+            interviewTimer = setInterval(() => {
+                timeRemaining--;
+                const mins = Math.floor(timeRemaining / 60);
+                const secs = timeRemaining % 60;
+                document.getElementById('interview-timer').innerText = `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+                if(timeRemaining <= 0) clearInterval(interviewTimer);
+            }, 1000);
+        }
+
+        // --- INITIALIZE ---
+        window.onload = () => {
+            loadProfile();
+            lucide.createIcons();
+        };
     </script>
-  </body>
+</body>
 </html>
