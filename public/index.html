@@ -458,8 +458,8 @@
         };
 
         // --- GLOBAL CONFIG ---
-        const RENDER_URL = ""; // Empty string forces browser to use the current host (127.0.0.1:5001)
-        const socket = io();
+        const RENDER_URL = "https://navora.onrender.com"; 
+        const socket = io(RENDER_URL); 
         let chatHistory = [
             {role:'model', text: "Greetings. I am your Navora Executive Coach. I am here to assist you in refining your professional background and accelerating your career goals. How may I be of service today?"}
         ];
